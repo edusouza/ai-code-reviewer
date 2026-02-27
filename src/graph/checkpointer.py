@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from google.cloud.firestore import Client as FirestoreClient
 from langgraph.checkpoint.base import BaseCheckpointSaver, Checkpoint
@@ -28,13 +28,14 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
             return None
 
         data = doc.to_dict()
-        return Checkpoint(
-            v=data["v"],
-            ts=data["ts"],
-            channel_values=self._deserialize_state(data["channel_values"]),
-            channel_versions=data["channel_versions"],
-            versions_seen=data["versions_seen"],
-        )
+        from typing import cast
+        return cast(Checkpoint, {
+            "v": data["v"],
+            "ts": data["ts"],
+            "channel_values": self._deserialize_state(data["channel_values"]),
+            "channel_versions": data["channel_versions"],
+            "versions_seen": data["versions_seen"],
+        })
 
     def put(self, config: dict[str, Any], checkpoint: Checkpoint) -> dict[str, Any]:  # type: ignore[override]
         """Save checkpoint to Firestore."""
@@ -68,13 +69,13 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
         for doc in docs:
             data = doc.to_dict()
             checkpoints.append(
-                Checkpoint(
-                    v=data["v"],
-                    ts=data["ts"],
-                    channel_values=self._deserialize_state(data["channel_values"]),
-                    channel_versions=data["channel_versions"],
-                    versions_seen=data["versions_seen"],
-                )
+                cast(Checkpoint, {
+                    "v": data["v"],
+                    "ts": data["ts"],
+                    "channel_values": self._deserialize_state(data["channel_values"]),
+                    "channel_versions": data["channel_versions"],
+                    "versions_seen": data["versions_seen"],
+                })
             )
 
         return checkpoints

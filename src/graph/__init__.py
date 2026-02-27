@@ -12,14 +12,24 @@ __all__ = [
     "FirestoreCheckpointer",
 ]
 
-def __getattr__(name):
+
+def __getattr__(name):  # noqa: F401
     if name in ["ReviewState", "ChunkInfo", "Suggestion", "ReviewConfig", "ReviewMetadata"]:
-        from src.graph.state import ReviewState, ChunkInfo, Suggestion, ReviewConfig, ReviewMetadata
+        from src.graph.state import (  # noqa: I001
+            ReviewState,
+            ChunkInfo,
+            Suggestion,
+            ReviewConfig,
+            ReviewMetadata,
+        )
+
         return locals()[name]
     elif name in ["build_review_graph", "create_review_workflow"]:
-        from src.graph.builder import build_review_graph, create_review_workflow
+        from src.graph.builder import build_review_graph, create_review_workflow  # noqa: I001
+
         return locals()[name]
     elif name == "FirestoreCheckpointer":
-        from src.graph.checkpointer import FirestoreCheckpointer
+        from src.graph.checkpointer import FirestoreCheckpointer  # noqa: I001
+
         return FirestoreCheckpointer
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

@@ -45,7 +45,7 @@ class BigQueryETL:
     def _initialize_client(self):
         """Initialize the BigQuery client."""
         try:
-            from google.cloud.bigquery import Client as BigQueryClient
+            from google.cloud.bigquery import Client as BigQueryClient, Dataset
 
             self._client = BigQueryClient(project=self.project_id)
 
@@ -55,7 +55,7 @@ class BigQueryETL:
                 self._client.get_dataset(dataset_ref)
             except Exception:
                 logger.info(f"Creating BigQuery dataset: {self.dataset_id}")
-                dataset = bigquery.Dataset(dataset_ref)
+                dataset = Dataset(dataset_ref)
                 dataset.location = "US"
                 self._client.create_dataset(dataset, exists_ok=True)
 
@@ -345,7 +345,12 @@ class BigQueryETL:
             logger.error(f"Cannot create table {table_name}: BigQuery client not initialized")
             return
 
-        from google.cloud.bigquery import Table, SchemaField, TimePartitioning, TimePartitioningType
+        from google.cloud.bigquery import (  # noqa: I001
+            Table,
+            SchemaField,
+            TimePartitioning,
+            TimePartitioningType,
+        )
 
         table_id = f"{self._table_prefix}.{table_name}"
 
@@ -404,7 +409,7 @@ class BigQueryETL:
             self._client.create_table(table, exists_ok=True)
         else:
             # Create generic table
-            table = bigquery.Table(table_id)
+            table = Table(table_id)
             self._client.create_table(table, exists_ok=True)
 
 
