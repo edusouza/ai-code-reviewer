@@ -113,7 +113,7 @@ resource "google_cloud_run_service" "langfuse_web" {
   template {
     spec {
       service_account_name = var.langfuse_service_account_email
-      
+
       containers {
         image = var.langfuse_image
 
@@ -164,9 +164,9 @@ resource "google_cloud_run_service" "langfuse_web" {
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/minScale" = "1"
-        "autoscaling.knative.dev/maxScale" = "5"
-        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.langfuse.connection_name
+        "autoscaling.knative.dev/minScale"        = "1"
+        "autoscaling.knative.dev/maxScale"        = "5"
+        "run.googleapis.com/cloudsql-instances"   = google_sql_database_instance.langfuse.connection_name
         "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
         "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
       }
@@ -185,7 +185,7 @@ resource "google_cloud_run_service" "langfuse_worker" {
   template {
     spec {
       service_account_name = var.langfuse_service_account_email
-      
+
       containers {
         image = var.langfuse_worker_image
 
@@ -212,8 +212,8 @@ resource "google_cloud_run_service" "langfuse_worker" {
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/minScale" = "1"
-        "autoscaling.knative.dev/maxScale" = "10"
+        "autoscaling.knative.dev/minScale"      = "1"
+        "autoscaling.knative.dev/maxScale"      = "10"
         "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.langfuse.connection_name
       }
     }

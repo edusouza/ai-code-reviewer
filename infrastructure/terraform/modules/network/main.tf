@@ -36,11 +36,11 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Serverless VPC connector for Cloud Run
 resource "google_vpc_access_connector" "connector" {
-  name          = "${var.environment}-connector"
-  project       = var.project_id
-  region        = var.region
-  network       = google_compute_network.vpc.id
-  ip_cidr_range = var.vpc_connector_cidr
+  name           = "${var.environment}-connector"
+  project        = var.project_id
+  region         = var.region
+  network        = google_compute_network.vpc.id
+  ip_cidr_range  = var.vpc_connector_cidr
   min_throughput = 200
   max_throughput = 1000
 }
