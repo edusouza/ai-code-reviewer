@@ -3,6 +3,7 @@ import pytest
 import hmac
 import hashlib
 import json
+import httpx
 from unittest.mock import Mock, AsyncMock, patch
 
 from providers.github import GitHubAdapter
@@ -262,6 +263,9 @@ class TestGitHubAdapter:
         
         mock_response = Mock()
         mock_response.status_code = 404
+        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError(
+            "Not Found", request=Mock(), response=mock_response
+        ))
         
         mock_client = Mock()
         mock_client.post = AsyncMock(return_value=mock_response)

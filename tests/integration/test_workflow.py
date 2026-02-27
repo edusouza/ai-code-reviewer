@@ -8,6 +8,22 @@ from graph.state import ReviewState, ReviewMetadata
 from models.events import PREvent, PRAction
 
 
+from langgraph.checkpoint.base import BaseCheckpointSaver, Checkpoint
+
+
+class MockCheckpointer(BaseCheckpointSaver):
+    """Mock checkpointer for testing that inherits from BaseCheckpointSaver."""
+
+    def get(self, config):
+        return None
+
+    def put(self, config, checkpoint):
+        return config
+
+    def list(self, config):
+        return []
+
+
 @pytest.mark.integration
 class TestWorkflowStateTransitions:
     """Test workflow state transitions."""
@@ -110,10 +126,10 @@ class TestReviewGraph:
     
     def test_build_review_graph_with_checkpointer(self):
         """Test building review graph with checkpointer."""
-        mock_checkpointer = Mock()
-        
+        mock_checkpointer = MockCheckpointer()
+
         graph = build_review_graph(checkpointer=mock_checkpointer)
-        
+
         assert graph is not None
     
     @pytest.mark.asyncio

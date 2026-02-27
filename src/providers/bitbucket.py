@@ -24,7 +24,9 @@ class BitbucketAdapter(ProviderAdapter):
 
     def get_event_type(self, headers: dict[str, str]) -> str | None:
         """Extract Bitbucket event type from X-Event-Key header."""
-        return headers.get("x-event-key")
+        # Normalize headers to lowercase for case-insensitive lookup
+        normalized_headers = {k.lower(): v for k, v in headers.items()}
+        return normalized_headers.get("x-event-key")
 
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         """Verify Bitbucket webhook signature if secret is configured.
@@ -47,6 +49,8 @@ class BitbucketAdapter(ProviderAdapter):
             return None
 
         pr_data = payload.get("pullrequest", {})
+        if not pr_data:
+            return None
         repo_data = pr_data.get("destination", {}).get("repository", {})
 
         action_map = {

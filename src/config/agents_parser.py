@@ -126,18 +126,28 @@ class AgentsParser:
     def _extract_style_rules(self, sections: dict[str, str]) -> dict[str, Any]:
         """Extract style rules from sections."""
         style_rules = {}
+        style_section_content = ""
 
         # Look for style-related sections
         for section_name, content in sections.items():
             if "style" in section_name.lower():
+                style_section_content += content + "\n"
                 # Try to parse language-specific rules
                 for language in ["python", "javascript", "typescript", "java", "go", "rust"]:
                     if language in section_name.lower() or language in content.lower():
                         style_rules[language] = self._parse_style_content(content)
 
-                # If no specific language, add to general
+                # If no specific language found in this section, add to general
                 if not any(lang in style_rules for lang in ["python", "javascript", "typescript"]):
                     style_rules["general"] = self._parse_style_content(content)
+
+        # Also check for language-specific subsections that might be separate
+        for language in ["python", "javascript", "typescript", "java", "go", "rust"]:
+            if language not in style_rules:
+                for section_name, content in sections.items():
+                    if language in section_name.lower():
+                        style_rules[language] = self._parse_style_content(content)
+                        break
 
         return style_rules if style_rules else self.default_config["style_rules"]
 
@@ -433,10 +443,21 @@ Respond with valid JSON only."""
         Returns:
             True if config needs LLM parsing
         """
-        # Check if we have meaningful content
-        has_style = bool(config.style_rules and any(config.style_rules.values()))
-        has_security = bool(any(config.security_priorities.values()))
-        has_patterns = bool(any(config.code_patterns.values()))
+        # Check if we have meaningful content beyond defaults
+        default = self.default_config
+
+        has_style = bool(
+            config.style_rules
+            and config.style_rules != default.get("style_rules", {})
+        )
+        has_security = bool(
+            config.security_priorities
+            and config.security_priorities != default.get("security_priorities", {})
+        )
+        has_patterns = bool(
+            config.code_patterns
+            and config.code_patterns != default.get("code_patterns", {})
+        )
 
         # If we have less than 2 major sections populated, consider it sparse
         populated_sections = sum([has_style, has_security, has_patterns])
@@ -471,7 +492,8 @@ Respond with valid JSON only."""
             # Handle directory wildcards
             if pattern.endswith("/**"):
                 prefix = pattern[:-3]
-                if file_path.startswith(prefix) or f"/{prefix}" in file_path:
+                # Check if it's a complete path component, not just a prefix
+                if file_path == prefix or file_path.startswith(prefix + "/") or f"/{prefix}/" in file_path or file_path.endswith(f"/{prefix}"):
                     return True
 
             # Handle file wildcards

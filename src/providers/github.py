@@ -13,11 +13,20 @@ class GitHubAdapter(ProviderAdapter):
 
     API_BASE = "https://api.github.com"
 
-    # Constructor inherited from base class
+    def __init__(self, webhook_secret: str, token: str | None = None):
+        """Initialize GitHub adapter.
+
+        Args:
+            webhook_secret: Secret for verifying webhook signatures
+            token: GitHub API token (optional, for posting comments)
+        """
+        super().__init__(webhook_secret, api_token=token)
 
     def get_event_type(self, headers: dict[str, str]) -> str | None:
         """Extract GitHub event type from X-GitHub-Event header."""
-        return headers.get("x-github-event")
+        # Normalize headers to lowercase for case-insensitive lookup
+        normalized_headers = {k.lower(): v for k, v in headers.items()}
+        return normalized_headers.get("x-github-event")
 
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         """Verify GitHub HMAC-SHA256 signature."""
@@ -133,9 +142,5 @@ class GitHubAdapter(ProviderAdapter):
                 response = await client.post(url, headers=headers, json=review_data)
                 response.raise_for_status()
                 return True
-            except httpx.HTTPStatusError as e:
-                # Log error details for debugging
-                error_body = e.response.text if hasattr(e.response, "text") else str(e)
-                raise ValueError(
-                    f"Failed to post GitHub review: {e.response.status_code} - {error_body}"
-                ) from e
+            except httpx.HTTPStatusError:
+                return False

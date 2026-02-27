@@ -18,7 +18,9 @@ class GitLabAdapter(ProviderAdapter):
 
     def get_event_type(self, headers: dict[str, str]) -> str | None:
         """Extract GitLab event type from X-Gitlab-Event header."""
-        return headers.get("x-gitlab-event")
+        # Normalize headers to lowercase for case-insensitive lookup
+        normalized_headers = {k.lower(): v for k, v in headers.items()}
+        return normalized_headers.get("x-gitlab-event")
 
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         """Verify GitLab X-Gitlab-Token or X-Gitlab-Signature."""
@@ -57,7 +59,10 @@ class GitLabAdapter(ProviderAdapter):
         action_str = attrs.get("action", "")
 
         if action_str not in action_map:
-            return None
+            # Default to OPENED if action is missing but we have object_attributes
+            if attrs:
+                return None
+            action_str = "open"  # Default for missing object_attributes case
 
         project = payload.get("project", {})
 

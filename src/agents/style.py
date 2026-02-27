@@ -45,6 +45,21 @@ Format your response as a JSON array of findings."""
         lines = content.split("\n")
         language = chunk["language"]
 
+        # Check for mixed indentation (tabs vs spaces) across the whole file
+        has_tabs = any("\t" in line for line in lines)
+        has_spaces = any(line.startswith("  ") or line.startswith(" ") for line in lines)
+        if has_tabs and has_spaces:
+            suggestions.append(
+                self.format_suggestion(
+                    file_path=chunk["file_path"],
+                    line_number=chunk["start_line"],
+                    message="Mixed tabs and spaces detected",
+                    severity="error",
+                    category="style",
+                    confidence=1.0,
+                )
+            )
+
         # Check each line
         for i, line in enumerate(lines):
             line_num = chunk["start_line"] + i
@@ -162,9 +177,9 @@ Format your response as a JSON array of findings."""
 
         # Check for == instead of ===
         if (
-            re.search(r"(?<!\!)=(?<!\=)=(?!=)", line)
+            re.search(r"==", line)
             and not re.search(r"===", line)
-            and re.search(r"if\s*\(|while\s*\(|return\s+|===?\s+", line)
+            and re.search(r"if|while|return", line)
         ):
             suggestions.append(
                 self.format_suggestion(

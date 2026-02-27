@@ -15,11 +15,22 @@ class ProviderFactory:
     }
 
     @classmethod
-    def create(cls, provider: str) -> ProviderAdapter:
+    def create(
+        cls,
+        provider: str,
+        webhook_secret: str | None = None,
+        token: str | None = None,
+        username: str | None = None,
+        app_password: str | None = None,
+    ) -> ProviderAdapter:
         """Create a provider adapter instance.
 
         Args:
             provider: Provider name (github, gitlab, bitbucket)
+            webhook_secret: Optional webhook secret override
+            token: Optional API token override
+            username: Optional username for Bitbucket
+            app_password: Optional app password for Bitbucket
 
         Returns:
             ProviderAdapter instance
@@ -30,23 +41,25 @@ class ProviderFactory:
         provider = provider.lower()
 
         if provider not in cls._adapters:
-            raise ValueError(f"Unsupported provider: {provider}")
+            raise ValueError(f"Unknown provider: {provider}")
 
         adapter_class = cls._adapters[provider]
 
         if provider == "github":
             return adapter_class(
-                webhook_secret=settings.github_webhook_secret, api_token=settings.github_private_key
+                webhook_secret=webhook_secret or settings.github_webhook_secret,
+                token=token or settings.github_private_key,
             )
         elif provider == "gitlab":
             return adapter_class(
-                webhook_secret=settings.gitlab_webhook_secret, api_token=settings.gitlab_token
+                webhook_secret=webhook_secret or settings.gitlab_webhook_secret,
+                token=token or settings.gitlab_token,
             )
         elif provider == "bitbucket":
             return adapter_class(
-                webhook_secret=settings.bitbucket_webhook_secret,
-                username=settings.bitbucket_username,
-                app_password=settings.bitbucket_app_password,
+                webhook_secret=webhook_secret or settings.bitbucket_webhook_secret,
+                username=username or settings.bitbucket_username,
+                app_password=app_password or settings.bitbucket_app_password,
             )
 
         raise ValueError(f"Configuration not found for provider: {provider}")
