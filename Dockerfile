@@ -1,5 +1,5 @@
 # Multi-stage build for production
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
