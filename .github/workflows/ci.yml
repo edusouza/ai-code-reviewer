@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install ruff mypy
+          pip install -r src/requirements.txt
+          
+      - name: Run Ruff linter
+        run: ruff check src/ --output-format=github
+        
+      - name: Run Ruff formatter check
+        run: ruff format --check src/
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install mypy
+          pip install -r src/requirements.txt
+          
+      - name: Run MyPy type checker
+        run: mypy src/ --ignore-missing-imports --no-error-summary
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install -r src/requirements.txt
+          pip install -r tests/requirements-test.txt
+          
+      - name: Run tests with coverage
+        run: pytest tests/ --cov=src --cov-report=xml --cov-report=term
+        
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  terraform-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+          
+      - name: Terraform Format Check
+        run: |
+          cd infrastructure/terraform
+          terraform fmt -check -recursive
+          
+      - name: Terraform Init
+        run: |
+          cd infrastructure/terraform/environments/dev
+          terraform init -backend=false
+          
+      - name: Terraform Validate
+        run: |
+          cd infrastructure/terraform/environments/dev
+          terraform validate
