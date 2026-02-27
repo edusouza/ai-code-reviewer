@@ -61,3 +61,14 @@ Avoid console.log statements in production code.
 
 ### Prefer Async/Await
 Use async/await instead of raw promises.
+
+### Fix Problems, Don't Mask Them
+**IMPORTANT**: When fixing issues, you MUST address the root cause, not just suppress warnings or work around the symptoms:
+- Do NOT use `# noqa` or similar suppressions unless absolutely necessary and justified
+- Do NOT downgrade dependencies or versions to avoid compatibility issues - upgrade/fix the issue instead
+- Do NOT lower test coverage thresholds to make builds pass - add proper tests
+- Do NOT use `|| true` to ignore command failures
+- Always prefer actual solutions over workarounds
+- If a linter error occurs, fix the underlying code issue, not the linter warning
+- If tests fail due to missing coverage, write tests for the uncovered code
+- If dependencies are incompatible, update them properly rather than downgrading

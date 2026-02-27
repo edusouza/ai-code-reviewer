@@ -410,3 +410,32 @@ def sample_review_state(sample_pr_event, sample_review_config):
         error=None,
         should_stop=False
     )
+
+
+@pytest.fixture
+def mocker(monkeypatch):
+    """Fixture providing unittest.mock.Mock class for creating mock objects."""
+    from unittest.mock import Mock, AsyncMock, patch
+    
+    class MockerFixture:
+        def __init__(self):
+            self.Mock = Mock
+            self.AsyncMock = AsyncMock
+            self.patch = patch
+            
+        def patch(self, target, **kwargs):
+            return patch(target, **kwargs)
+    
+    return MockerFixture()
+
+
+@pytest.fixture
+async def async_client():
+    """Async test client for FastAPI app."""
+    from httpx import AsyncClient, ASGITransport
+    from main import create_app
+    
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client

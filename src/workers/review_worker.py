@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from google.cloud.pubsub_v1 import SubscriberClient, PublisherClient
+from google.cloud.pubsub_v1 import PublisherClient, SubscriberClient
 from google.cloud.pubsub_v1.subscriber.message import Message
 
 from config.settings import settings

@@ -45,7 +45,8 @@ class BigQueryETL:
     def _initialize_client(self):
         """Initialize the BigQuery client."""
         try:
-            from google.cloud.bigquery import Client as BigQueryClient, Dataset
+            from google.cloud.bigquery import Dataset
+            from google.cloud.bigquery import Client as BigQueryClient
 
             self._client = BigQueryClient(project=self.project_id)
 
@@ -345,9 +346,9 @@ class BigQueryETL:
             logger.error(f"Cannot create table {table_name}: BigQuery client not initialized")
             return
 
-        from google.cloud.bigquery import (  # noqa: I001
-            Table,
+        from google.cloud.bigquery import (
             SchemaField,
+            Table,
             TimePartitioning,
             TimePartitioningType,
         )
