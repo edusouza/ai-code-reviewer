@@ -83,3 +83,10 @@ mypy src/ --strict
 - Fix ALL errors before committing
 - If any tool fails, fix the underlying issue - don't ignore or workaround
 - Treat linter/type errors as blockers, not suggestions
+
+**Quick Fix for Ruff Errors**: To automatically fix many common ruff issues, use:
+```bash
+ruff check src/ tests/ --fix
+```
+- Review all changes before committing
+- Some issues may still require manual fixes
