@@ -1,12 +1,13 @@
 """Test fixtures and configuration."""
-import pytest
-import json
-from datetime import datetime
-from pathlib import Path
-from unittest.mock import Mock, AsyncMock
 
 # Add src to path
 import sys
+from datetime import datetime
+from pathlib import Path
+from unittest.mock import AsyncMock, Mock
+
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
@@ -127,7 +128,7 @@ def sample_bitbucket_pr_payload():
 @pytest.fixture
 def sample_pr_event():
     """Sample normalized PREvent."""
-    from models.events import PREvent, PRAction
+    from models.events import PRAction, PREvent
     return PREvent(
         provider="github",
         repo_owner="myorg",
@@ -382,9 +383,10 @@ def sample_review_config():
 @pytest.fixture
 def sample_review_state(sample_pr_event, sample_review_config):
     """Sample review state for workflow tests."""
-    from graph.state import ReviewState, ReviewMetadata
     from datetime import datetime
-    
+
+    from graph.state import ReviewMetadata, ReviewState
+
     return ReviewState(
         pr_event=sample_pr_event,
         config=sample_review_config,
@@ -415,26 +417,27 @@ def sample_review_state(sample_pr_event, sample_review_config):
 @pytest.fixture
 def mocker(monkeypatch):
     """Fixture providing unittest.mock.Mock class for creating mock objects."""
-    from unittest.mock import Mock, AsyncMock, patch
-    
+    from unittest.mock import AsyncMock, Mock, patch
+
     class MockerFixture:
         def __init__(self):
             self.Mock = Mock
             self.AsyncMock = AsyncMock
             self.patch = patch
-            
+
         def patch(self, target, **kwargs):
             return patch(target, **kwargs)
-    
+
     return MockerFixture()
 
 
 @pytest.fixture
 async def async_client():
     """Async test client for FastAPI app."""
-    from httpx import AsyncClient, ASGITransport
+    from httpx import ASGITransport, AsyncClient
+
     from main import create_app
-    
+
     app = create_app()
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:

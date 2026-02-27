@@ -45,8 +45,8 @@ class BigQueryETL:
     def _initialize_client(self):
         """Initialize the BigQuery client."""
         try:
-            from google.cloud.bigquery import Dataset
             from google.cloud.bigquery import Client as BigQueryClient
+            from google.cloud.bigquery import Dataset
 
             self._client = BigQueryClient(project=self.project_id)
 

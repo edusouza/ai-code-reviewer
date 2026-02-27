@@ -153,7 +153,8 @@ class CloudMetricsClient:
             return
 
         try:
-            from google.cloud.monitoring_v3 import Point as MonitoringPoint, TimeSeries
+            from google.cloud.monitoring_v3 import Point as MonitoringPoint
+            from google.cloud.monitoring_v3 import TimeSeries
 
             # Group metrics by name and type
             grouped_metrics: dict[str, list[MetricPoint]] = {}

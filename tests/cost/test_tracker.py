@@ -1,10 +1,10 @@
 """Tests for cost tracker module."""
 
-import pytest
 from datetime import datetime
-from unittest.mock import Mock, AsyncMock, MagicMock
 
-from cost.tracker import CostTracker, CostRecord, ModelPricing
+import pytest
+
+from cost.tracker import CostRecord, CostTracker, ModelPricing
 
 
 class TestCostTracker:
@@ -13,9 +13,9 @@ class TestCostTracker:
     def test_calculate_cost_gemini_pro(self):
         """Test cost calculation for Gemini Pro model."""
         tracker = CostTracker()
-        
+
         cost = tracker.calculate_cost("gemini-pro", 1000, 500)
-        
+
         # Expected: (1000/1000) * 0.00025 + (500/1000) * 0.0005 = 0.00025 + 0.00025 = 0.0005
         expected = 0.00025 + 0.00025
         assert cost == pytest.approx(expected, rel=1e-6)
@@ -23,9 +23,9 @@ class TestCostTracker:
     def test_calculate_cost_gemini_flash(self):
         """Test cost calculation for Gemini Flash model."""
         tracker = CostTracker()
-        
+
         cost = tracker.calculate_cost("gemini-flash", 2000, 1000)
-        
+
         # Expected: (2000/1000) * 0.0001 + (1000/1000) * 0.0002 = 0.0002 + 0.0002 = 0.0004
         expected = 0.0002 + 0.0002
         assert cost == pytest.approx(expected, rel=1e-6)
@@ -33,9 +33,9 @@ class TestCostTracker:
     def test_calculate_cost_gpt4(self):
         """Test cost calculation for GPT-4 model."""
         tracker = CostTracker()
-        
+
         cost = tracker.calculate_cost("gpt-4", 1000, 500)
-        
+
         # Expected: (1000/1000) * 0.03 + (500/1000) * 0.06 = 0.03 + 0.03 = 0.06
         expected = 0.03 + 0.03
         assert cost == pytest.approx(expected, rel=1e-6)
@@ -43,9 +43,9 @@ class TestCostTracker:
     def test_calculate_cost_unknown_model(self):
         """Test cost calculation falls back to Gemini Pro for unknown models."""
         tracker = CostTracker()
-        
+
         cost = tracker.calculate_cost("unknown-model", 1000, 500)
-        
+
         # Should use Gemini Pro pricing as default
         expected = 0.00025 + 0.00025
         assert cost == pytest.approx(expected, rel=1e-6)
@@ -54,7 +54,7 @@ class TestCostTracker:
     async def test_track_call(self):
         """Test tracking a single API call."""
         tracker = CostTracker()
-        
+
         record = await tracker.track_call(
             model="gemini-pro",
             operation="analyze_code",
@@ -64,7 +64,7 @@ class TestCostTracker:
             repo="test/repo",
             metadata={"agent": "security"}
         )
-        
+
         assert isinstance(record, CostRecord)
         assert record.model == "gemini-pro"
         assert record.operation == "analyze_code"
@@ -80,7 +80,7 @@ class TestCostTracker:
     async def test_track_review(self):
         """Test tracking a complete review."""
         tracker = CostTracker()
-        
+
         record = await tracker.track_review(
             pr_number=456,
             repo="owner/repo",
@@ -90,7 +90,7 @@ class TestCostTracker:
             num_files=3,
             num_suggestions=10
         )
-        
+
         assert isinstance(record, CostRecord)
         assert record.model == "gemini-pro"
         assert record.operation == "full_review"
@@ -118,18 +118,18 @@ class TestCostTracker:
             "repo": "test/repo",
             "metadata": {}
         }
-        
+
         mock_query = mocker.Mock()
         mock_query.stream.return_value = [mock_doc]
-        
+
         mock_collection = mocker.Mock()
         mock_collection.where.return_value = mock_collection
         mock_collection.limit.return_value = mock_query
-        
+
         mock_db.collection.return_value = mock_collection
-        
+
         tracker = CostTracker(firestore_db=mock_db)
-        
+
         # Mock the async executor
         mocker.patch(
             'asyncio.get_event_loop',
@@ -137,9 +137,9 @@ class TestCostTracker:
                 run_in_executor=lambda *args, **kwargs: [mock_doc]
             )
         )
-        
+
         record = await tracker.get_pr_cost(123, "test/repo")
-        
+
         assert record is not None
         assert record.pr_number == 123
         assert record.repo == "test/repo"
@@ -152,9 +152,9 @@ class TestCostTracker:
         mock_collection.where.return_value = mock_collection
         mock_collection.limit.return_value = mocker.Mock(stream=lambda: [])
         mock_db.collection.return_value = mock_collection
-        
+
         tracker = CostTracker(firestore_db=mock_db)
-        
+
         # Mock the async executor to return empty list
         mocker.patch(
             'asyncio.get_event_loop',
@@ -162,9 +162,9 @@ class TestCostTracker:
                 run_in_executor=lambda *args, **kwargs: []
             )
         )
-        
+
         record = await tracker.get_pr_cost(999, "nonexistent/repo")
-        
+
         assert record is None
 
     @pytest.mark.asyncio
@@ -175,14 +175,14 @@ class TestCostTracker:
         mock_doc1.to_dict.return_value = {"cost_usd": 0.5}
         mock_doc2 = mocker.Mock()
         mock_doc2.to_dict.return_value = {"cost_usd": 0.3}
-        
+
         mock_collection = mocker.Mock()
         mock_collection.where.return_value = mock_collection
         mock_collection.stream.return_value = [mock_doc1, mock_doc2]
         mock_db.collection.return_value = mock_collection
-        
+
         tracker = CostTracker(firestore_db=mock_db)
-        
+
         # Mock the async executor
         mocker.patch(
             'asyncio.get_event_loop',
@@ -190,9 +190,9 @@ class TestCostTracker:
                 run_in_executor=lambda *args, **kwargs: [mock_doc1, mock_doc2]
             )
         )
-        
+
         cost = await tracker.get_daily_cost()
-        
+
         assert cost == 0.8
 
     def test_model_pricing_values(self):
