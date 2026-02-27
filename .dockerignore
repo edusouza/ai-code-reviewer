@@ -88,6 +88,6 @@ docker-compose*.yml
 # Miscellaneous
 *.md
 !README.md
-AGENTS.md
+!AGENTS.md
 Makefile
 scripts/
