@@ -1,0 +1,44 @@
+#!/bin/sh
+# Pre-commit hook to run linting and type checking
+# Install: cp .git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "Running pre-commit checks..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Track if any check fails
+FAILED=0
+
+echo ""
+echo "${YELLOW}1/2 Running Ruff linter...${NC}"
+if python -m ruff check src/ tests/; then
+    echo "${GREEN}✓ Ruff checks passed${NC}"
+else
+    echo "${RED}✗ Ruff checks failed${NC}"
+    echo ""
+    echo "Try running: python -m ruff check src/ tests/ --fix"
+    echo "Or fix the issues manually."
+    FAILED=1
+fi
+
+echo ""
+echo "${YELLOW}2/2 Running MyPy type checker...${NC}"
+if python -m mypy src/ --strict; then
+    echo "${GREEN}✓ MyPy checks passed${NC}"
+else
+    echo "${RED}✗ MyPy checks failed${NC}"
+    FAILED=1
+fi
+
+echo ""
+if [ $FAILED -eq 0 ]; then
+    echo "${GREEN}✓ All pre-commit checks passed!${NC}"
+    exit 0
+else
+    echo "${RED}✗ Pre-commit checks failed. Please fix the issues above before committing.${NC}"
+    exit 1
+fi
