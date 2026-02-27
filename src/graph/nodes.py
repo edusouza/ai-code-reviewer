@@ -206,7 +206,7 @@ async def parallel_agents_node(state: ReviewState) -> dict[str, Any]:
         all_suggestions: list[Suggestion] = []
         raw_outputs = state.get("raw_agent_outputs", {}).copy()
 
-        for i, (agent, result) in enumerate(zip(agents, results)):
+        for _i, (agent, result) in enumerate(zip(agents, results, strict=False)):
             if isinstance(result, Exception):
                 # Log error but continue
                 continue

@@ -133,7 +133,7 @@ Return the indices (1-based) of the top {top_k} most important suggestions as a 
 
         # Check locations with multiple suggestions
         conflicting = []
-        for key, loc_suggestions in by_location.items():
+        for _key, loc_suggestions in by_location.items():
             if len(loc_suggestions) > 1:
                 conflicting.extend(loc_suggestions)
 

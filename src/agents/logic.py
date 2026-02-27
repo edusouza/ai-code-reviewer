@@ -202,18 +202,19 @@ Format your response as a JSON array of findings."""
             line_num = chunk["start_line"] + i
 
             # Check for callback without error handling
-            if re.search(r"\.(then|catch)\s*\(", line):
-                if not re.search(r"catch|reject|error", content):
-                    suggestions.append(
-                        self.format_suggestion(
-                            file_path=chunk["file_path"],
-                            line_number=line_num,
-                            message="Promise chain without error handling - add .catch()",
-                            severity="warning",
-                            category="logic",
-                            confidence=0.75,
-                        )
+            if re.search(r"\.(then|catch)\s*\(", line) and not re.search(
+                r"catch|reject|error", content
+            ):
+                suggestions.append(
+                    self.format_suggestion(
+                        file_path=chunk["file_path"],
+                        line_number=line_num,
+                        message="Promise chain without error handling - add .catch()",
+                        severity="warning",
+                        category="logic",
+                        confidence=0.75,
                     )
+                )
 
             # Check for async without await
             if re.search(r"async\s+function|async\s*\(", line):

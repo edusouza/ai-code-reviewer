@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from src.llm.client import VertexAIClient
 
 
-class ModelTier(str, Enum):
+class ModelTier(StrEnum):
     """Model tiers for different use cases."""
 
     FAST = "fast"  # Quick, cheaper models

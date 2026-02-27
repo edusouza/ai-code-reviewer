@@ -72,7 +72,7 @@ class AgentFactory:
         """
         agents = []
 
-        for name in cls._agents.keys():
+        for name in cls._agents:
             if config is None or config.get(name, True):
                 agents.append(cls.create_agent(name))
 

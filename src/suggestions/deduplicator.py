@@ -39,7 +39,7 @@ class Deduplicator:
 
         # Deduplicate each file's suggestions
         result = []
-        for file_path, file_suggestions in by_file.items():
+        for _file_path, file_suggestions in by_file.items():
             deduped = self._deduplicate_file_suggestions(file_suggestions)
             result.extend(deduped)
 

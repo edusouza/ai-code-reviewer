@@ -336,7 +336,7 @@ async def github_feedback_webhook(request: Request, raw_body: bytes = Depends(ge
         logger.error(f"Error processing GitHub feedback: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e
 
 
 @router.post(
@@ -378,7 +378,7 @@ async def gitlab_feedback_webhook(request: Request, raw_body: bytes = Depends(ge
         logger.error(f"Error processing GitLab feedback: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e
 
 
 @router.post(
@@ -420,4 +420,4 @@ async def bitbucket_feedback_webhook(request: Request, raw_body: bytes = Depends
         logger.error(f"Error processing Bitbucket feedback: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e

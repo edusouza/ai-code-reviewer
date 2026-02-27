@@ -127,10 +127,7 @@ class BudgetEnforcer:
         budget_limit = self.config.per_pr_budget_usd
 
         # Calculate with estimated cost
-        if estimated_cost:
-            projected_spend = current_spend + estimated_cost
-        else:
-            projected_spend = current_spend
+        projected_spend = current_spend + estimated_cost if estimated_cost else current_spend
 
         percentage = (projected_spend / budget_limit) if budget_limit > 0 else 0
 

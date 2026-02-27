@@ -85,18 +85,19 @@ Format your response as a JSON array of findings."""
                 suggestions.extend(self._check_java_style(line, line_num, chunk["file_path"]))
 
         # Missing docstring check for Python
-        if language == "python" and self._is_function_or_class(lines):
-            if not self._has_docstring(lines):
-                suggestions.append(
-                    self.format_suggestion(
-                        file_path=chunk["file_path"],
-                        line_number=chunk["start_line"],
-                        message="Missing docstring for function/class",
-                        severity="suggestion",
-                        category="style",
-                        confidence=0.7,
-                    )
+        if language == "python" and self._is_function_or_class(
+            lines
+        ) and not self._has_docstring(lines):
+            suggestions.append(
+                self.format_suggestion(
+                    file_path=chunk["file_path"],
+                    line_number=chunk["start_line"],
+                    message="Missing docstring for function/class",
+                    severity="suggestion",
+                    category="style",
+                    confidence=0.7,
                 )
+            )
 
         # LLM analysis for complex style issues
         try:
@@ -158,18 +159,19 @@ Format your response as a JSON array of findings."""
         suggestions = []
 
         # Check for == instead of ===
-        if re.search(r"(?<!\!)=(?<!\=)=(?!=)", line) and not re.search(r"===", line):
-            if re.search(r"if\s*\(|while\s*\(|return\s+|===?\s+", line):
-                suggestions.append(
-                    self.format_suggestion(
-                        file_path=file_path,
-                        line_number=line_num,
-                        message="Use '===' instead of '==' for strict equality",
-                        severity="suggestion",
-                        category="style",
-                        confidence=0.8,
-                    )
+        if re.search(r"(?<!\!)=(?<!\=)=(?!=)", line) and not re.search(
+            r"===", line
+        ) and re.search(r"if\s*\(|while\s*\(|return\s+|===?\s+", line):
+            suggestions.append(
+                self.format_suggestion(
+                    file_path=file_path,
+                    line_number=line_num,
+                    message="Use '===' instead of '==' for strict equality",
+                    severity="suggestion",
+                    category="style",
+                    confidence=0.8,
                 )
+            )
 
         # Check for var usage
         if re.search(r"\bvar\s+", line):

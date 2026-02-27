@@ -61,7 +61,7 @@ async def github_webhook(
         logger.error(f"Error processing GitHub webhook: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e
 
 
 @router.post(
@@ -111,7 +111,7 @@ async def gitlab_webhook(
         logger.error(f"Error processing GitLab webhook: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e
 
 
 @router.post(
@@ -161,4 +161,4 @@ async def bitbucket_webhook(
         logger.error(f"Error processing Bitbucket webhook: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
-        )
+        ) from e

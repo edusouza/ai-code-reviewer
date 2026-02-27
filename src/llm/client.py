@@ -192,7 +192,7 @@ You must respond with valid JSON only. Do not include markdown formatting, expla
                 return json.loads(response)
 
         except json.JSONDecodeError as e:
-            raise Exception(f"Failed to parse JSON response: {e}\nResponse: {response[:500]}")
+            raise Exception(f"Failed to parse JSON response: {e}\nResponse: {response[:500]}") from e
 
     def count_tokens(self, text: str, model_name: str = "gemini-pro") -> int:
         """

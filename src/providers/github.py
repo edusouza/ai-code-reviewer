@@ -138,4 +138,4 @@ class GitHubAdapter(ProviderAdapter):
                 error_body = e.response.text if hasattr(e.response, "text") else str(e)
                 raise ValueError(
                     f"Failed to post GitHub review: {e.response.status_code} - {error_body}"
-                )
+                ) from e

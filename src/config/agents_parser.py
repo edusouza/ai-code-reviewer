@@ -475,11 +475,11 @@ Respond with valid JSON only."""
                     return True
 
             # Handle file wildcards
-            if pattern.startswith("*"):
-                if fnmatch.fnmatch(file_path, pattern) or fnmatch.fnmatch(
-                    file_path.split("/")[-1], pattern
-                ):
-                    return True
+            if pattern.startswith("*") and (
+                fnmatch.fnmatch(file_path, pattern)
+                or fnmatch.fnmatch(file_path.split("/")[-1], pattern)
+            ):
+                return True
 
             # Handle exact matches
             if fnmatch.fnmatch(file_path, pattern) or file_path.endswith(pattern.lstrip("*")):
