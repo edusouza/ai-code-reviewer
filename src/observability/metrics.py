@@ -58,7 +58,9 @@ class CloudMetricsClient:
             logger.warning("google-cloud-monitoring not installed, metrics disabled")
             self.enabled = False
 
-    def record_gauge(self, metric_name: str, value: float, labels: dict[str, str] | None = None) -> None:
+    def record_gauge(
+        self, metric_name: str, value: float, labels: dict[str, str] | None = None
+    ) -> None:
         """
         Record a gauge metric (value at a point in time).
 

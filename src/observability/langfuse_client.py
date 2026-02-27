@@ -277,7 +277,9 @@ class LangFuseClient:
         except Exception as e:
             logger.error(f"Failed to end trace: {e}")
 
-    def score_trace(self, trace_id: str, name: str, value: float, comment: str | None = None) -> None:
+    def score_trace(
+        self, trace_id: str, name: str, value: float, comment: str | None = None
+    ) -> None:
         """
         Add a score to a trace.
 

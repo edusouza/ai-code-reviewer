@@ -26,7 +26,19 @@ else
 fi
 
 echo ""
-echo "${YELLOW}2/2 Running MyPy type checker...${NC}"
+echo "${YELLOW}2/3 Running Ruff format check...${NC}"
+if python -m ruff format --check .; then
+    echo "${GREEN}✓ Ruff format check passed${NC}"
+else
+    echo "${RED}✗ Ruff format check failed${NC}"
+    echo ""
+    echo "Run: python -m ruff format ."
+    echo "to fix formatting automatically."
+    FAILED=1
+fi
+
+echo ""
+echo "${YELLOW}3/3 Running MyPy type checker...${NC}"
 # Run mypy from src/ directory to avoid duplicate module errors
 if (cd src && env -u PYTHONPATH python -m mypy . --strict); then
     echo "${GREEN}✓ MyPy checks passed${NC}"

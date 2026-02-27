@@ -97,7 +97,9 @@ def trace_workflow(name: str | None = None) -> Callable[[Callable[..., Any]], Ca
     return decorator
 
 
-def trace_agent(name: str | None = None, agent_type: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def trace_agent(
+    name: str | None = None, agent_type: str | None = None
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to trace agent execution.
 
@@ -377,7 +379,9 @@ def trace_span(name: str, metadata: dict[str, Any] | None = None) -> Iterator[An
         raise
 
 
-def _extract_metadata(func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any]:
+def _extract_metadata(
+    func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> dict[str, Any]:
     """Extract metadata from function arguments."""
     metadata: dict[str, Any] = {"function": func.__name__, "module": func.__module__}
 

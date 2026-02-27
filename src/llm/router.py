@@ -59,9 +59,10 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return cast(str, await self.client.generate(
-            prompt=prompt, system_prompt=system_prompt, **model_config
-        ))
+        return cast(
+            str,
+            await self.client.generate(prompt=prompt, system_prompt=system_prompt, **model_config),
+        )
 
     async def route_json(
         self,
@@ -85,9 +86,12 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return cast(dict[str, Any], await self.client.generate_json(
-            prompt=prompt, system_prompt=system_prompt, **model_config
-        ))
+        return cast(
+            dict[str, Any],
+            await self.client.generate_json(
+                prompt=prompt, system_prompt=system_prompt, **model_config
+            ),
+        )
 
     def select_tier(
         self, task_type: str, complexity: str = "medium", priority: str = "normal"

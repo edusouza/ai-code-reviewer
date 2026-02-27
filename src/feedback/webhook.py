@@ -300,7 +300,9 @@ async def get_raw_body(request: Request) -> bytes:
     summary="GitHub feedback webhook",
     description="Receive feedback from GitHub reactions and comments",
 )
-async def github_feedback_webhook(request: Request, raw_body: bytes = Depends(get_raw_body)) -> dict[str, Any]:
+async def github_feedback_webhook(
+    request: Request, raw_body: bytes = Depends(get_raw_body)
+) -> dict[str, Any]:
     """Handle GitHub feedback webhooks."""
     try:
         payload = await request.json()
@@ -345,7 +347,9 @@ async def github_feedback_webhook(request: Request, raw_body: bytes = Depends(ge
     summary="GitLab feedback webhook",
     description="Receive feedback from GitLab emoji awards and notes",
 )
-async def gitlab_feedback_webhook(request: Request, raw_body: bytes = Depends(get_raw_body)) -> dict[str, Any]:
+async def gitlab_feedback_webhook(
+    request: Request, raw_body: bytes = Depends(get_raw_body)
+) -> dict[str, Any]:
     """Handle GitLab feedback webhooks."""
     try:
         payload = await request.json()
@@ -387,7 +391,9 @@ async def gitlab_feedback_webhook(request: Request, raw_body: bytes = Depends(ge
     summary="Bitbucket feedback webhook",
     description="Receive feedback from Bitbucket pull request comments",
 )
-async def bitbucket_feedback_webhook(request: Request, raw_body: bytes = Depends(get_raw_body)) -> dict[str, Any]:
+async def bitbucket_feedback_webhook(
+    request: Request, raw_body: bytes = Depends(get_raw_body)
+) -> dict[str, Any]:
     """Handle Bitbucket feedback webhooks."""
     try:
         payload = await request.json()

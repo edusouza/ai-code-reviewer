@@ -90,6 +90,7 @@ class ReviewWorker:
         """Initialize Pub/Sub clients."""
         try:
             from typing import cast
+
             self.subscriber = SubscriberClient()
             self.publisher = PublisherClient()
 
