@@ -62,7 +62,7 @@ class TestCostTracker:
             completion_tokens=500,
             pr_number=123,
             repo="test/repo",
-            metadata={"agent": "security"}
+            metadata={"agent": "security"},
         )
 
         assert isinstance(record, CostRecord)
@@ -88,7 +88,7 @@ class TestCostTracker:
             total_prompt_tokens=5000,
             total_completion_tokens=2000,
             num_files=3,
-            num_suggestions=10
+            num_suggestions=10,
         )
 
         assert isinstance(record, CostRecord)
@@ -116,7 +116,7 @@ class TestCostTracker:
             "cost_usd": 0.001,
             "pr_number": 123,
             "repo": "test/repo",
-            "metadata": {}
+            "metadata": {},
         }
 
         mock_query = mocker.Mock()
@@ -132,10 +132,8 @@ class TestCostTracker:
 
         # Mock the async executor
         mocker.patch(
-            'asyncio.get_event_loop',
-            return_value=mocker.Mock(
-                run_in_executor=lambda *args, **kwargs: [mock_doc]
-            )
+            "asyncio.get_event_loop",
+            return_value=mocker.Mock(run_in_executor=lambda *args, **kwargs: [mock_doc]),
         )
 
         record = await tracker.get_pr_cost(123, "test/repo")
@@ -157,10 +155,8 @@ class TestCostTracker:
 
         # Mock the async executor to return empty list
         mocker.patch(
-            'asyncio.get_event_loop',
-            return_value=mocker.Mock(
-                run_in_executor=lambda *args, **kwargs: []
-            )
+            "asyncio.get_event_loop",
+            return_value=mocker.Mock(run_in_executor=lambda *args, **kwargs: []),
         )
 
         record = await tracker.get_pr_cost(999, "nonexistent/repo")
@@ -185,10 +181,10 @@ class TestCostTracker:
 
         # Mock the async executor
         mocker.patch(
-            'asyncio.get_event_loop',
+            "asyncio.get_event_loop",
             return_value=mocker.Mock(
                 run_in_executor=lambda *args, **kwargs: [mock_doc1, mock_doc2]
-            )
+            ),
         )
 
         cost = await tracker.get_daily_cost()

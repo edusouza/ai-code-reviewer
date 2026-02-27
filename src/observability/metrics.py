@@ -46,7 +46,7 @@ class CloudMetricsClient:
                 logger.error(f"Failed to initialize Cloud Monitoring: {e}")
                 self.enabled = False
 
-    def _initialize_client(self):
+    def _initialize_client(self) -> None:
         """Initialize the Cloud Monitoring client."""
         try:
             from google.cloud.monitoring_v3 import MetricServiceClient
@@ -58,7 +58,7 @@ class CloudMetricsClient:
             logger.warning("google-cloud-monitoring not installed, metrics disabled")
             self.enabled = False
 
-    def record_gauge(self, metric_name: str, value: float, labels: dict[str, str] | None = None):
+    def record_gauge(self, metric_name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """
         Record a gauge metric (value at a point in time).
 
@@ -81,7 +81,7 @@ class CloudMetricsClient:
 
     def record_counter(
         self, metric_name: str, value: float = 1, labels: dict[str, str] | None = None
-    ):
+    ) -> None:
         """
         Record a counter metric (accumulating value).
 
@@ -104,7 +104,7 @@ class CloudMetricsClient:
 
     def record_histogram(
         self, metric_name: str, value: float, labels: dict[str, str] | None = None
-    ):
+    ) -> None:
         """
         Record a histogram metric (distribution of values).
 
@@ -127,7 +127,7 @@ class CloudMetricsClient:
 
     def record_timing(
         self, metric_name: str, duration_seconds: float, labels: dict[str, str] | None = None
-    ):
+    ) -> None:
         """
         Record a timing metric.
 
@@ -140,14 +140,14 @@ class CloudMetricsClient:
             metric_name=f"{metric_name}_duration_seconds", value=duration_seconds, labels=labels
         )
 
-    def _add_to_buffer(self, point: MetricPoint):
+    def _add_to_buffer(self, point: MetricPoint) -> None:
         """Add a metric point to the buffer."""
         self._metrics_buffer.append(point)
 
         if len(self._metrics_buffer) >= self._buffer_size:
             self.flush()
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush all buffered metrics to Cloud Monitoring."""
         if not self.enabled or not self._metrics_buffer:
             return
@@ -204,9 +204,10 @@ class CloudMetricsClient:
 
             # Send to Cloud Monitoring in batches
             batch_size = 200  # Cloud Monitoring limit
-            for i in range(0, len(time_series_list), batch_size):
-                batch = time_series_list[i : i + batch_size]
-                self._client.create_time_series(name=self._project_name, time_series=batch)
+            if self._client is not None:
+                for i in range(0, len(time_series_list), batch_size):
+                    batch = time_series_list[i : i + batch_size]
+                    self._client.create_time_series(name=self._project_name, time_series=batch)
 
             logger.debug(f"Flushed {len(self._metrics_buffer)} metrics to Cloud Monitoring")
             self._metrics_buffer.clear()
@@ -222,7 +223,7 @@ class CloudMetricsClient:
         tokens_used: int,
         cost_usd: float,
         success: bool,
-    ):
+    ) -> None:
         """
         Record comprehensive review metrics.
 
@@ -248,7 +249,7 @@ class CloudMetricsClient:
 
     def record_agent_metrics(
         self, agent_type: str, duration_seconds: float, suggestions_found: int, success: bool
-    ):
+    ) -> None:
         """
         Record agent execution metrics.
 
@@ -271,7 +272,7 @@ class CloudMetricsClient:
         completion_tokens: int,
         duration_seconds: float,
         success: bool,
-    ):
+    ) -> None:
         """
         Record LLM call metrics.
 
@@ -292,7 +293,7 @@ class CloudMetricsClient:
         self.record_timing("llm_request", duration_seconds, labels)
         self.record_counter("llm_requests", 1, labels)
 
-    def record_feedback_metrics(self, feedback_type: str, score: float, provider: str):
+    def record_feedback_metrics(self, feedback_type: str, score: float, provider: str) -> None:
         """
         Record feedback metrics.
 

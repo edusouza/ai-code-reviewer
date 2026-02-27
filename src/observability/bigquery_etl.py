@@ -4,9 +4,12 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from config.settings import settings
+
+if TYPE_CHECKING:
+    from google.cloud.bigquery import Client as BigQueryClient
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ class BigQueryETL:
         self.dataset_id = dataset_id
         self.enabled = enabled and bool(self.project_id)
 
-        self._client = None
+        self._client: BigQueryClient | None = None
         self._table_prefix = f"{self.project_id}.{self.dataset_id}"
 
         if self.enabled:
@@ -42,7 +45,7 @@ class BigQueryETL:
                 logger.error(f"Failed to initialize BigQuery: {e}")
                 self.enabled = False
 
-    def _initialize_client(self):
+    def _initialize_client(self) -> None:
         """Initialize the BigQuery client."""
         try:
             from google.cloud.bigquery import Client as BigQueryClient
@@ -53,11 +56,13 @@ class BigQueryETL:
             # Ensure dataset exists
             dataset_ref = f"{self.project_id}.{self.dataset_id}"
             try:
+                assert self._client is not None
                 self._client.get_dataset(dataset_ref)
             except Exception:
                 logger.info(f"Creating BigQuery dataset: {self.dataset_id}")
                 dataset = Dataset(dataset_ref)
                 dataset.location = "US"
+                assert self._client is not None
                 self._client.create_dataset(dataset, exists_ok=True)
 
             logger.info("BigQuery ETL initialized")
@@ -65,7 +70,7 @@ class BigQueryETL:
             logger.warning("google-cloud-bigquery not installed, ETL disabled")
             self.enabled = False
 
-    async def export_daily_metrics(self, date: datetime | None = None):
+    async def export_daily_metrics(self, date: datetime | None = None) -> None:
         """
         Export daily metrics to BigQuery.
 
@@ -94,7 +99,7 @@ class BigQueryETL:
             logger.error(f"Failed to export daily metrics: {e}")
             raise
 
-    async def export_review_analytics(self, start_date: datetime, end_date: datetime):
+    async def export_review_analytics(self, start_date: datetime, end_date: datetime) -> None:
         """
         Export review analytics for a date range.
 
@@ -123,7 +128,7 @@ class BigQueryETL:
             logger.error(f"Failed to export review analytics: {e}")
             raise
 
-    async def export_feedback_analytics(self, start_date: datetime, end_date: datetime):
+    async def export_feedback_analytics(self, start_date: datetime, end_date: datetime) -> None:
         """
         Export feedback analytics.
 
@@ -307,7 +312,7 @@ class BigQueryETL:
 
         return transformed
 
-    async def _load_to_bigquery(self, table_name: str, data: list[dict[str, Any]]):
+    async def _load_to_bigquery(self, table_name: str, data: list[dict[str, Any]]) -> None:
         """Load data to BigQuery table."""
         if not data:
             logger.debug(f"No data to load to {table_name}")
@@ -340,7 +345,7 @@ class BigQueryETL:
             logger.error(f"Failed to load to BigQuery: {e}")
             raise
 
-    def _create_table(self, table_name: str):
+    def _create_table(self, table_name: str) -> None:
         """Create a BigQuery table if it doesn't exist."""
         if not self._client:
             logger.error(f"Cannot create table {table_name}: BigQuery client not initialized")
@@ -415,7 +420,7 @@ class BigQueryETL:
 
 
 # Cloud Function entry point for scheduled ETL
-def run_daily_etl(event, context):
+def run_daily_etl(event: dict[str, Any], context: Any) -> dict[str, str]:
     """
     Cloud Function entry point for daily ETL job.
 

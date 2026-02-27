@@ -10,7 +10,7 @@ from src.config.settings import settings
 class FirestoreCheckpointer(BaseCheckpointSaver):
     """Custom LangGraph checkpointer using Firestore."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.db = FirestoreClient(project=settings.project_id)
         self.collection = self.db.collection("review_checkpoints")
@@ -29,13 +29,17 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
 
         data = doc.to_dict()
         from typing import cast
-        return cast(Checkpoint, {
-            "v": data["v"],
-            "ts": data["ts"],
-            "channel_values": self._deserialize_state(data["channel_values"]),
-            "channel_versions": data["channel_versions"],
-            "versions_seen": data["versions_seen"],
-        })
+
+        return cast(
+            Checkpoint,
+            {
+                "v": data["v"],
+                "ts": data["ts"],
+                "channel_values": self._deserialize_state(data["channel_values"]),
+                "channel_versions": data["channel_versions"],
+                "versions_seen": data["versions_seen"],
+            },
+        )
 
     def put(self, config: dict[str, Any], checkpoint: Checkpoint) -> dict[str, Any]:  # type: ignore[override]
         """Save checkpoint to Firestore."""
@@ -69,13 +73,16 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
         for doc in docs:
             data = doc.to_dict()
             checkpoints.append(
-                cast(Checkpoint, {
-                    "v": data["v"],
-                    "ts": data["ts"],
-                    "channel_values": self._deserialize_state(data["channel_values"]),
-                    "channel_versions": data["channel_versions"],
-                    "versions_seen": data["versions_seen"],
-                })
+                cast(
+                    Checkpoint,
+                    {
+                        "v": data["v"],
+                        "ts": data["ts"],
+                        "channel_values": self._deserialize_state(data["channel_values"]),
+                        "channel_versions": data["channel_versions"],
+                        "versions_seen": data["versions_seen"],
+                    },
+                )
             )
 
         return checkpoints

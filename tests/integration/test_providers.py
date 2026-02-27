@@ -1,4 +1,5 @@
 """Integration tests for providers."""
+
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -17,9 +18,7 @@ class TestProviderFactory:
     def test_create_github(self):
         """Test creating GitHub adapter."""
         adapter = ProviderFactory.create_provider(
-            "github",
-            webhook_secret="secret",
-            token="github_token"
+            "github", webhook_secret="secret", token="github_token"
         )
 
         assert isinstance(adapter, GitHubAdapter)
@@ -27,9 +26,7 @@ class TestProviderFactory:
     def test_create_gitlab(self):
         """Test creating GitLab adapter."""
         adapter = ProviderFactory.create_provider(
-            "gitlab",
-            webhook_secret="secret",
-            token="gitlab_token"
+            "gitlab", webhook_secret="secret", token="gitlab_token"
         )
 
         assert isinstance(adapter, GitLabAdapter)
@@ -37,10 +34,7 @@ class TestProviderFactory:
     def test_create_bitbucket(self):
         """Test creating Bitbucket adapter."""
         adapter = ProviderFactory.create_provider(
-            "bitbucket",
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
+            "bitbucket", webhook_secret="secret", username="user", app_password="pass"
         )
 
         assert isinstance(adapter, BitbucketAdapter)
@@ -121,11 +115,7 @@ class TestProviderSignatureVerification:
         secret = "webhook_secret"
         payload = b'{"action": "opened"}'
 
-        expected = hmac.new(
-            secret.encode(),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
         signature = f"sha256={expected}"
 
         adapter = GitHubAdapter(webhook_secret=secret)
@@ -180,10 +170,9 @@ class TestProviderAPIIntegration:
         sample_pr_event.provider = "gitlab"
 
         mock_response = Mock()
-        mock_response.json = Mock(return_value=[
-            {"diff": "@@ -1 +1 @@\n-old\n+new"},
-            {"diff": "@@ -2 +2 @@\n-foo\n+bar"}
-        ])
+        mock_response.json = Mock(
+            return_value=[{"diff": "@@ -1 +1 @@\n-old\n+new"}, {"diff": "@@ -2 +2 @@\n-foo\n+bar"}]
+        )
         mock_response.raise_for_status = Mock()
 
         mock_client = Mock()
@@ -202,11 +191,7 @@ class TestProviderAPIIntegration:
     @pytest.mark.asyncio
     async def test_bitbucket_fetch_pr(self, sample_pr_event):
         """Test Bitbucket PR fetch with mocked API."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
         sample_pr_event.provider = "bitbucket"
 
         mock_response = Mock()
@@ -235,7 +220,7 @@ class TestProviderAPIIntegration:
                 line_number=10,
                 message="Test comment",
                 severity="warning",
-                suggestion=None
+                suggestion=None,
             )
         ]
 
@@ -265,7 +250,7 @@ class TestProviderAPIIntegration:
                 line_number=10,
                 message="Test comment",
                 severity="warning",
-                suggestion="Fix this"
+                suggestion="Fix this",
             )
         ]
 
@@ -287,11 +272,7 @@ class TestProviderAPIIntegration:
     @pytest.mark.asyncio
     async def test_bitbucket_post_comment(self, sample_pr_event):
         """Test Bitbucket comment posting with mocked API."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
         sample_pr_event.provider = "bitbucket"
 
         comments = [
@@ -300,7 +281,7 @@ class TestProviderAPIIntegration:
                 line_number=10,
                 message="Test comment",
                 severity="warning",
-                suggestion=None
+                suggestion=None,
             )
         ]
 

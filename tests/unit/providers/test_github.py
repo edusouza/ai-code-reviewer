@@ -1,4 +1,5 @@
 """Tests for GitHub provider adapter."""
+
 import hashlib
 import hmac
 from unittest.mock import AsyncMock, Mock, patch
@@ -46,11 +47,7 @@ class TestGitHubAdapter:
         secret = "mysecret"
         payload = b'{"action": "opened"}'
 
-        expected = hmac.new(
-            secret.encode(),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
         signature = f"sha256={expected}"
 
         adapter = GitHubAdapter(webhook_secret=secret)
@@ -103,19 +100,11 @@ class TestGitHubAdapter:
             "pull_request": {
                 "number": 42,
                 "title": "Update PR",
-                "head": {
-                    "ref": "feature/test",
-                    "sha": "abc123"
-                },
-                "base": {
-                    "ref": "main"
-                },
-                "user": {"login": "user1"}
+                "head": {"ref": "feature/test", "sha": "abc123"},
+                "base": {"ref": "main"},
+                "user": {"login": "user1"},
             },
-            "repository": {
-                "name": "repo",
-                "owner": {"login": "owner"}
-            }
+            "repository": {"name": "repo", "owner": {"login": "owner"}},
         }
 
         event = adapter.parse_webhook(payload, github_headers)
@@ -136,12 +125,9 @@ class TestGitHubAdapter:
                 "merged": True,
                 "head": {"ref": "feature", "sha": "abc"},
                 "base": {"ref": "main"},
-                "user": {"login": "user"}
+                "user": {"login": "user"},
             },
-            "repository": {
-                "name": "repo",
-                "owner": {"login": "owner"}
-            }
+            "repository": {"name": "repo", "owner": {"login": "owner"}},
         }
 
         event = adapter.parse_webhook(payload, github_headers)
@@ -225,7 +211,13 @@ class TestGitHubAdapter:
         adapter = GitHubAdapter(webhook_secret="secret", token="token")
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion=None)
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion=None,
+            )
         ]
 
         mock_response = Mock()
@@ -257,14 +249,20 @@ class TestGitHubAdapter:
         adapter = GitHubAdapter(webhook_secret="secret", token="token")
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion=None)
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion=None,
+            )
         ]
 
         mock_response = Mock()
         mock_response.status_code = 404
-        mock_response.raise_for_status = Mock(side_effect=httpx.HTTPStatusError(
-            "Not Found", request=Mock(), response=mock_response
-        ))
+        mock_response.raise_for_status = Mock(
+            side_effect=httpx.HTTPStatusError("Not Found", request=Mock(), response=mock_response)
+        )
 
         mock_client = Mock()
         mock_client.post = AsyncMock(return_value=mock_response)
@@ -288,7 +286,7 @@ class TestGitHubAdapterEdgeCases:
 
         payload = {
             "action": "opened",
-            "repository": {"name": "repo", "owner": {"login": "owner"}}
+            "repository": {"name": "repo", "owner": {"login": "owner"}},
             # Missing pull_request key
         }
 
@@ -309,8 +307,8 @@ class TestGitHubAdapterEdgeCases:
                 "title": "Test",
                 "head": {"ref": "branch", "sha": "abc"},
                 "base": {"ref": "main"},
-                "user": {"login": "user"}
-            }
+                "user": {"login": "user"},
+            },
             # Missing repository key
         }
 
@@ -325,11 +323,7 @@ class TestGitHubAdapterEdgeCases:
         secret = "mysecret"
         payload = b""
 
-        expected = hmac.new(
-            secret.encode(),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
         signature = f"sha256={expected}"
 
         adapter = GitHubAdapter(webhook_secret=secret)

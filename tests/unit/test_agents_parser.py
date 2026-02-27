@@ -1,4 +1,5 @@
 """Tests for AGENTS.md parser."""
+
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -56,10 +57,7 @@ class TestAgentsParser:
 
         assert "python" in config.style_rules or "general" in config.style_rules
         # Check if line length was extracted
-        has_line_length = any(
-            "max_line_length" in rules
-            for rules in config.style_rules.values()
-        )
+        has_line_length = any("max_line_length" in rules for rules in config.style_rules.values())
         assert has_line_length
 
     @pytest.mark.asyncio
@@ -158,7 +156,7 @@ Subsection content.
 
         sections = {
             "python style": "Max line length: 120\nUse type hints: yes",
-            "javascript style": "Max line length: 100"
+            "javascript style": "Max line length: 100",
         }
 
         style_rules = parser._extract_style_rules(sections)
@@ -262,7 +260,7 @@ Require tests for new features: yes
             code_patterns={},
             review_settings={},
             custom_rules={},
-            raw_sections={}
+            raw_sections={},
         )
 
         assert parser._is_config_sparse(config) is True
@@ -278,7 +276,7 @@ Require tests for new features: yes
             code_patterns={},
             review_settings={},
             custom_rules={},
-            raw_sections={}
+            raw_sections={},
         )
 
         assert parser._is_config_sparse(config) is False
@@ -324,13 +322,15 @@ Require tests for new features: yes
     async def test_parse_with_llm_fallback(self):
         """Test LLM fallback parsing."""
         mock_llm = Mock()
-        mock_llm.generate_json = AsyncMock(return_value={
-            "style_rules": {"python": {"max_line_length": 100}},
-            "security_priorities": {"high": [], "medium": [], "low": []},
-            "ignore_patterns": [],
-            "code_patterns": {},
-            "review_settings": {}
-        })
+        mock_llm.generate_json = AsyncMock(
+            return_value={
+                "style_rules": {"python": {"max_line_length": 100}},
+                "security_priorities": {"high": [], "medium": [], "low": []},
+                "ignore_patterns": [],
+                "code_patterns": {},
+                "review_settings": {},
+            }
+        )
 
         parser = AgentsParser(llm_client=mock_llm)
 
@@ -377,7 +377,7 @@ class TestParsedConfig:
             code_patterns={"python": {"good_patterns": [], "anti_patterns": []}},
             review_settings={"max_suggestions": 50},
             custom_rules={},
-            raw_sections={}
+            raw_sections={},
         )
 
         assert config.style_rules["python"]["max_line_length"] == 120

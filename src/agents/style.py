@@ -6,10 +6,10 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class StyleAgent(BaseAgent):
+class StyleAgent(BaseAgent):  # type: ignore[misc]
     """Agent that checks code formatting and style conventions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="style", priority=5)
         self.llm_client = VertexAIClient()
 
@@ -281,4 +281,5 @@ Return JSON array with: line_number, message, severity, suggestion, confidence""
 
     def should_analyze(self, chunk: ChunkInfo) -> bool:
         """Style agent analyzes all code files."""
-        return chunk["language"] != "unknown"
+        language: str = chunk.get("language", "unknown")
+        return language != "unknown"

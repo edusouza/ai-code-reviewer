@@ -3,9 +3,16 @@
 import hashlib
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from config.settings import settings
+
+if TYPE_CHECKING:
+    from google.cloud.aiplatform.matching_engine import (
+        MatchingEngineIndex,
+        MatchingEngineIndexEndpoint,
+    )
+    from vertexai.language_models import TextEmbeddingModel
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +55,12 @@ class VertexVectorStore:
         self.endpoint_id = endpoint_id
         self.embedding_model = embedding_model
 
-        self._index_client = None
-        self._endpoint_client = None
-        self._embedding_client = None
+        self._index_client: MatchingEngineIndex | None = None
+        self._endpoint_client: MatchingEngineIndexEndpoint | None = None
+        self._embedding_client: TextEmbeddingModel | None = None
         self._initialized = False
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize clients lazily."""
         if self._initialized:
             return
@@ -223,10 +230,10 @@ class VertexVectorStore:
 
             # Query the endpoint
             results = self._endpoint_client.find_neighbors(
-                deployed_index_id=self.index_id,
+                deployed_index_id=self.index_id,  # type: ignore[arg-type]
                 queries=[query_embedding],
                 num_neighbors=top_k,
-                filter=filters if filters else None,
+                filter=filters if filters else None,  # type: ignore[arg-type]
             )
 
             # Parse results
@@ -234,9 +241,9 @@ class VertexVectorStore:
             for neighbor in results[0] if results else []:
                 doc = VectorDocument(
                     id=neighbor.id,
-                    content=neighbor.metadata.get("content", ""),
+                    content=neighbor.metadata.get("content", ""),  # type: ignore[attr-defined]
                     embedding=None,
-                    metadata=neighbor.metadata,
+                    metadata=neighbor.metadata,  # type: ignore[attr-defined]
                     score=neighbor.distance,
                 )
                 documents.append(doc)

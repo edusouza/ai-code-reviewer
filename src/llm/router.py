@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any
+from typing import Any, cast
 
 from src.llm.client import VertexAIClient
 
@@ -34,7 +34,7 @@ class ModelRouter:
         },
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = VertexAIClient()
 
     async def route(
@@ -42,7 +42,7 @@ class ModelRouter:
         prompt: str,
         tier: ModelTier = ModelTier.BALANCED,
         system_prompt: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """
         Route request to appropriate model.
@@ -59,16 +59,16 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return await self.client.generate(
+        return cast(str, await self.client.generate(
             prompt=prompt, system_prompt=system_prompt, **model_config
-        )
+        ))
 
     async def route_json(
         self,
         prompt: str,
         tier: ModelTier = ModelTier.BALANCED,
         system_prompt: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """
         Route request and parse JSON response.
@@ -85,9 +85,9 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return await self.client.generate_json(
+        return cast(dict[str, Any], await self.client.generate_json(
             prompt=prompt, system_prompt=system_prompt, **model_config
-        )
+        ))
 
     def select_tier(
         self, task_type: str, complexity: str = "medium", priority: str = "normal"
@@ -123,7 +123,7 @@ class ModelRouter:
         prompts: list[str],
         tier: ModelTier = ModelTier.BALANCED,
         system_prompt: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> list[str]:
         """
         Route multiple prompts concurrently.

@@ -1,4 +1,5 @@
 """Tests for Logic agent."""
+
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -62,7 +63,7 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "while True:\n    pass",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -81,12 +82,16 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def read_file(path):\n    f = open(path)\n    return f.read()",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
-        resource = [s for s in suggestions if "resource" in s["message"].lower() or "close" in s["message"].lower()]
+        resource = [
+            s
+            for s in suggestions
+            if "resource" in s["message"].lower() or "close" in s["message"].lower()
+        ]
         assert len(resource) > 0
 
     @pytest.mark.asyncio
@@ -100,13 +105,17 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def divide(a, b):\n    return a / b",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
         # Check for division by zero patterns
-        _ = [s for s in suggestions if "division" in s["message"].lower() or "zero" in s["message"].lower()]
+        _ = [
+            s
+            for s in suggestions
+            if "division" in s["message"].lower() or "zero" in s["message"].lower()
+        ]
         # This pattern might not always match, so we just check it doesn't crash
         assert isinstance(suggestions, list)
 
@@ -121,13 +130,17 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "try:\n    risky_operation()\nexcept:\n    pass",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
         # This might be caught by logic agent
-        except_pass = [s for s in suggestions if "except" in s["message"].lower() or "pass" in s["message"].lower()]
+        except_pass = [
+            s
+            for s in suggestions
+            if "except" in s["message"].lower() or "pass" in s["message"].lower()
+        ]
         assert len(except_pass) >= 0  # May or may not be detected
 
     @pytest.mark.asyncio
@@ -141,7 +154,7 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def process(items=[]):\n    items.append(1)\n    return items",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -160,12 +173,16 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "items = [1, 2, 3]\nfor item in items:\n    if item == 2:\n        items.remove(item)",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
-        modification = [s for s in suggestions if "modification" in s["message"].lower() or "iteration" in s["message"].lower()]
+        modification = [
+            s
+            for s in suggestions
+            if "modification" in s["message"].lower() or "iteration" in s["message"].lower()
+        ]
         assert len(modification) > 0
 
     @pytest.mark.asyncio
@@ -179,7 +196,7 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "fetch('/api/data')\n    .then(response => response.json())\n    .then(data => console.log(data));",
-            "language": "javascript"
+            "language": "javascript",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -198,12 +215,16 @@ class TestLogicAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "async function process() {\n    return 1 + 1;\n}",  # No await
-            "language": "javascript"
+            "language": "javascript",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
-        async_await = [s for s in suggestions if "async" in s["message"].lower() and "await" in s["message"].lower()]
+        async_await = [
+            s
+            for s in suggestions
+            if "async" in s["message"].lower() and "await" in s["message"].lower()
+        ]
         assert len(async_await) > 0
 
     @pytest.mark.asyncio
@@ -223,7 +244,7 @@ def process(items=[]):
         data = f.read()
     return data
 """,
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -242,7 +263,7 @@ def process(items=[]):
             "start_line": 1,
             "end_line": 5,
             "content": "# Title\n\nSome markdown content.",
-            "language": "markdown"
+            "language": "markdown",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -267,7 +288,7 @@ class TestLogicAgentEdgeCases:
             "start_line": 1,
             "end_line": 1,
             "content": "",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -286,7 +307,7 @@ class TestLogicAgentEdgeCases:
             "start_line": 1,
             "end_line": 20,
             "content": "\n".join(["while True: pass"] * 10),
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -309,7 +330,7 @@ class TestLogicAgentEdgeCases:
             "start_line": 1,
             "end_line": 20,
             "content": "while True:\n    pass\n" * 6,
-            "language": "python"
+            "language": "python",
         }
 
         # Should not raise exception
@@ -346,12 +367,7 @@ class TestLogicAgentEdgeCases:
         with patch("agents.logic.VertexAIClient"):
             agent = LogicAgent()
 
-        chunk = {
-            "file_path": "test.py",
-            "start_line": 1,
-            "content": "",
-            "language": "python"
-        }
+        chunk = {"file_path": "test.py", "start_line": 1, "content": "", "language": "python"}
 
         suggestions = agent._check_python_logic(chunk)
         assert len(suggestions) == 0
@@ -361,12 +377,7 @@ class TestLogicAgentEdgeCases:
         with patch("agents.logic.VertexAIClient"):
             agent = LogicAgent()
 
-        chunk = {
-            "file_path": "test.js",
-            "start_line": 1,
-            "content": "",
-            "language": "javascript"
-        }
+        chunk = {"file_path": "test.js", "start_line": 1, "content": "", "language": "javascript"}
 
         suggestions = agent._check_js_logic(chunk)
         assert len(suggestions) == 0
@@ -382,7 +393,7 @@ class TestLogicAgentEdgeCases:
             "start_line": 10,  # Chunk starts at line 10
             "end_line": 15,
             "content": "line1\nline2\nwhile True:\n    pass",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})

@@ -1,4 +1,5 @@
 """Tests for suggestion processing."""
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -34,16 +35,20 @@ class TestSuggestionProcessor:
         processor = SuggestionProcessor(max_suggestions=10)
 
         with (
-            patch.object(processor.deduplicator, 'deduplicate', return_value=sample_suggestions),
-            patch.object(processor.severity_classifier, 'filter_by_threshold', return_value=sample_suggestions),
-            patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True))
+            patch.object(processor.deduplicator, "deduplicate", return_value=sample_suggestions),
+            patch.object(
+                processor.severity_classifier,
+                "filter_by_threshold",
+                return_value=sample_suggestions,
+            ),
+            patch.object(processor.judge, "validate_suggestion", AsyncMock(return_value=True)),
         ):
             result = await processor.process(
                 sample_suggestions,
                 enable_deduplication=True,
                 enable_severity_filter=True,
                 enable_validation=True,
-                enable_ranking=False
+                enable_ranking=False,
             )
 
         assert "suggestions" in result
@@ -60,7 +65,7 @@ class TestSuggestionProcessor:
             enable_deduplication=False,
             enable_severity_filter=False,
             enable_validation=False,
-            enable_ranking=False
+            enable_ranking=False,
         )
 
         assert len(result["suggestions"]) == len(sample_suggestions)
@@ -70,13 +75,13 @@ class TestSuggestionProcessor:
         """Test processing with LLM validation."""
         processor = SuggestionProcessor()
 
-        with patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True)):
+        with patch.object(processor.judge, "validate_suggestion", AsyncMock(return_value=True)):
             result = await processor.process(
                 sample_suggestions,
                 enable_deduplication=False,
                 enable_severity_filter=False,
                 enable_validation=True,
-                enable_ranking=False
+                enable_ranking=False,
             )
 
         assert result["metadata"]["steps"][0]["step"] == "validation"
@@ -90,13 +95,13 @@ class TestSuggestionProcessor:
         async def mock_validate(suggestion):
             return suggestion["severity"] != "error"
 
-        with patch.object(processor.judge, 'validate_suggestion', mock_validate):
+        with patch.object(processor.judge, "validate_suggestion", mock_validate):
             result = await processor.process(
                 sample_suggestions,
                 enable_deduplication=False,
                 enable_severity_filter=False,
                 enable_validation=True,
-                enable_ranking=False
+                enable_ranking=False,
             )
 
         # Should have filtered out error severity
@@ -108,13 +113,15 @@ class TestSuggestionProcessor:
         """Test processing with ranking."""
         processor = SuggestionProcessor(max_suggestions=2)
 
-        with patch.object(processor.judge, 'rank_suggestions', AsyncMock(return_value=sample_suggestions[:2])):
+        with patch.object(
+            processor.judge, "rank_suggestions", AsyncMock(return_value=sample_suggestions[:2])
+        ):
             result = await processor.process(
                 sample_suggestions,
                 enable_deduplication=False,
                 enable_severity_filter=False,
                 enable_validation=False,
-                enable_ranking=True
+                enable_ranking=True,
             )
 
         assert result["metadata"]["steps"][0]["step"] == "ranking"
@@ -130,7 +137,7 @@ class TestSuggestionProcessor:
             enable_deduplication=False,
             enable_severity_filter=False,
             enable_validation=False,
-            enable_ranking=False
+            enable_ranking=False,
         )
 
         assert len(result["suggestions"]) == 2
@@ -146,7 +153,7 @@ class TestSuggestionProcessor:
             enable_deduplication=False,
             enable_severity_filter=False,
             enable_validation=False,
-            enable_ranking=False
+            enable_ranking=False,
         )
 
         assert "severity_counts" in result["metadata"]
@@ -164,7 +171,7 @@ class TestSuggestionProcessor:
             enable_deduplication=False,
             enable_severity_filter=False,
             enable_validation=False,
-            enable_ranking=False
+            enable_ranking=False,
         )
 
         assert "category_counts" in result["metadata"]
@@ -187,8 +194,10 @@ class TestSuggestionProcessor:
         processor = SuggestionProcessor()
 
         with (
-            patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True)),
-            patch.object(processor.judge, 'rank_suggestions', AsyncMock(return_value=sample_suggestions))
+            patch.object(processor.judge, "validate_suggestion", AsyncMock(return_value=True)),
+            patch.object(
+                processor.judge, "rank_suggestions", AsyncMock(return_value=sample_suggestions)
+            ),
         ):
             suggestions = await processor.strict_process(sample_suggestions)
 
@@ -230,7 +239,12 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "style"}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            }
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -242,8 +256,18 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "style"},
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "style"}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -255,8 +279,18 @@ class TestDeduplicator:
         dedup = Deduplicator(line_tolerance=5)
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "style"},
-            {"file_path": "test.py", "line_number": 11, "message": "Test issue", "category": "style"}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 11,
+                "message": "Test issue",
+                "category": "style",
+            },
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -269,8 +303,18 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test1.py", "line_number": 10, "message": "Test issue", "category": "style"},
-            {"file_path": "test2.py", "line_number": 10, "message": "Test issue", "category": "style"}
+            {
+                "file_path": "test1.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
+            {
+                "file_path": "test2.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -282,8 +326,18 @@ class TestDeduplicator:
         dedup = Deduplicator(message_similarity_threshold=0.8)
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Line too long exceeds limit", "category": "style"},
-            {"file_path": "test.py", "line_number": 10, "message": "Line too long exceeds the limit", "category": "style"}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Line too long exceeds limit",
+                "category": "style",
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Line too long exceeds the limit",
+                "category": "style",
+            },
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -296,8 +350,18 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "style"},
-            {"file_path": "test.py", "line_number": 10, "message": "Test issue", "category": "security"}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "style",
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Test issue",
+                "category": "security",
+            },
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -341,8 +405,22 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Style issue", "category": "style", "severity": "suggestion", "confidence": 0.8},
-            {"file_path": "test.py", "line_number": 10, "message": "Security issue", "category": "security", "severity": "error", "confidence": 0.9}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Style issue",
+                "category": "style",
+                "severity": "suggestion",
+                "confidence": 0.8,
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Security issue",
+                "category": "security",
+                "severity": "error",
+                "confidence": 0.9,
+            },
         ]
 
         result = dedup.deduplicate_by_priority(suggestions)
@@ -356,8 +434,22 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Warning", "category": "style", "severity": "warning", "confidence": 0.9},
-            {"file_path": "test.py", "line_number": 10, "message": "Error", "category": "style", "severity": "error", "confidence": 0.8}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Warning",
+                "category": "style",
+                "severity": "warning",
+                "confidence": 0.9,
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Error",
+                "category": "style",
+                "severity": "error",
+                "confidence": 0.8,
+            },
         ]
 
         best = dedup._select_highest_priority(suggestions)
@@ -369,8 +461,22 @@ class TestDeduplicator:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "test.py", "line_number": 10, "message": "Low confidence", "category": "style", "severity": "warning", "confidence": 0.5},
-            {"file_path": "test.py", "line_number": 10, "message": "High confidence", "category": "style", "severity": "warning", "confidence": 0.9}
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "Low confidence",
+                "category": "style",
+                "severity": "warning",
+                "confidence": 0.5,
+            },
+            {
+                "file_path": "test.py",
+                "line_number": 10,
+                "message": "High confidence",
+                "category": "style",
+                "severity": "warning",
+                "confidence": 0.9,
+            },
         ]
 
         best = dedup._select_highest_priority(suggestions)
@@ -389,7 +495,7 @@ class TestDeduplicatorEdgeCases:
         suggestions = [
             {"file_path": "test.py", "line_number": 10, "message": "Issue 1", "category": "style"},
             {"file_path": "test.py", "line_number": 20, "message": "Issue 2", "category": "style"},
-            {"file_path": "test.py", "line_number": 30, "message": "Issue 3", "category": "style"}
+            {"file_path": "test.py", "line_number": 30, "message": "Issue 3", "category": "style"},
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -401,9 +507,24 @@ class TestDeduplicatorEdgeCases:
         dedup = Deduplicator()
 
         suggestions = [
-            {"file_path": "file1.py", "line_number": 10, "message": "Same issue", "category": "style"},
-            {"file_path": "file2.py", "line_number": 10, "message": "Same issue", "category": "style"},
-            {"file_path": "file1.py", "line_number": 10, "message": "Same issue", "category": "style"}  # Duplicate
+            {
+                "file_path": "file1.py",
+                "line_number": 10,
+                "message": "Same issue",
+                "category": "style",
+            },
+            {
+                "file_path": "file2.py",
+                "line_number": 10,
+                "message": "Same issue",
+                "category": "style",
+            },
+            {
+                "file_path": "file1.py",
+                "line_number": 10,
+                "message": "Same issue",
+                "category": "style",
+            },  # Duplicate
         ]
 
         result = dedup.deduplicate(suggestions)
@@ -418,7 +539,7 @@ class TestDeduplicatorEdgeCases:
             "file_path": "test.py",
             "line_number": 10,
             "message": "  LINE   TOO   LONG  ",
-            "category": "style"
+            "category": "style",
         }
 
         signature = dedup._create_signature(suggestion)

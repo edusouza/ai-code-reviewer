@@ -1,4 +1,5 @@
 """Tests for Style agent."""
+
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -61,7 +62,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "x = 1\n" + "y = " + "a" * 150 + "\nz = 3",  # Line exceeds 120 chars
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -80,7 +81,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def test():   \n    pass   \n    return",  # Trailing spaces
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -99,7 +100,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def test():\n\tpass\n  return",  # Mixed tabs and spaces
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -118,7 +119,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "try:\n    pass\nexcept:\n    pass",  # Bare except
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -137,7 +138,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "def func(items=[]):\n    pass\n\ndef other(data={}):",  # Mutable defaults
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -156,7 +157,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "def process(data):\n    return data\n\nclass MyClass:\n    pass",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -175,7 +176,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "if (x == y) {\n    return true;\n}",  # Using == instead of ===
-            "language": "javascript"
+            "language": "javascript",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -194,7 +195,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "var x = 1;\nlet y = 2;\nconst z = 3;",
-            "language": "javascript"
+            "language": "javascript",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -213,7 +214,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "public void method() {\n    // code\n}",
-            "language": "java"
+            "language": "java",
         }
 
         _ = await agent.analyze(chunk, {})
@@ -232,7 +233,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 5,
             "content": 'def process(data):\n    """Process the data."""\n    return data',
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -252,7 +253,7 @@ class TestStyleAgent:
             "start_line": 1,
             "end_line": 3,
             "content": "var x: number = 1;\nif (x == 1) {\n    console.log('yes');\n}",
-            "language": "typescript"
+            "language": "typescript",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -277,7 +278,7 @@ class TestStyleAgentEdgeCases:
             "start_line": 1,
             "end_line": 1,
             "content": "",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -296,7 +297,7 @@ class TestStyleAgentEdgeCases:
             "start_line": 1,
             "end_line": 1,
             "content": "print('hello')",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -318,7 +319,7 @@ class TestStyleAgentEdgeCases:
             "start_line": 1,
             "end_line": 20,
             "content": "def test():\n" + "    x = " + "a" * 150 + "\n" * 18,
-            "language": "python"
+            "language": "python",
         }
 
         # Should not raise exception
@@ -372,7 +373,7 @@ class TestStyleAgentEdgeCases:
         with patch("agents.style.VertexAIClient"):
             agent = StyleAgent()
 
-        lines = ['def test():', '    """A docstring."""', "    pass"]
+        lines = ["def test():", '    """A docstring."""', "    pass"]
         assert agent._has_docstring(lines) is True
 
         lines = ["def test():", "    '''Another docstring.'''", "    pass"]

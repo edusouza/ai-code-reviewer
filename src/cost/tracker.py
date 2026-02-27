@@ -43,7 +43,7 @@ class CostRecord:
 class CostTracker:
     """Track costs for API calls and reviews."""
 
-    def __init__(self, firestore_db: Any | None = None):
+    def __init__(self, firestore_db: Any | None = None) -> None:
         """
         Initialize the cost tracker.
 
@@ -66,7 +66,7 @@ class CostTracker:
             "gpt-3.5-turbo": ModelPricing.GPT35,
         }
 
-    async def _initialize_db(self):
+    async def _initialize_db(self) -> None:
         """Lazy initialization of Firestore."""
         if self._initialized or self._db is not None:
             return
@@ -117,7 +117,7 @@ class CostTracker:
             f"({prompt_tokens} input + {completion_tokens} output tokens)"
         )
 
-        return total_cost
+        return float(total_cost)
 
     async def track_call(
         self,
@@ -224,7 +224,7 @@ class CostTracker:
 
         return record
 
-    async def flush(self):
+    async def flush(self) -> None:
         """Flush buffered records to storage."""
         if not self._buffer:
             return
@@ -346,7 +346,7 @@ class CostTracker:
 
             total_cost = sum(doc.to_dict().get("cost_usd", 0) for doc in docs)
 
-            return total_cost
+            return float(total_cost)
 
         except Exception as e:
             logger.error(f"Failed to get daily cost: {e}")

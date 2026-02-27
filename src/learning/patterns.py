@@ -505,7 +505,7 @@ class PatternManager:
 
         return "\n".join(formatted)
 
-    async def _store_patterns(self, patterns: list[CodePattern]):
+    async def _store_patterns(self, patterns: list[CodePattern]) -> None:
         """Store patterns in the vector store."""
         if not self.vector_store:
             return

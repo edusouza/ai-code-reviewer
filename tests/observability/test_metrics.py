@@ -17,7 +17,7 @@ class TestCloudMetricsClient:
 
     def test_initialization_with_missing_dependency(self):
         """Test client handles missing google-cloud-monitoring gracefully."""
-        with patch('observability.metrics.logger'):
+        with patch("observability.metrics.logger"):
             client = CloudMetricsClient(project_id="test-project", enabled=True)
             # When library is not installed, it should disable itself
             assert client.enabled is False
@@ -54,7 +54,7 @@ class TestCloudMetricsClient:
             value=42.0,
             timestamp=datetime.utcnow(),
             labels={"env": "test"},
-            metric_type="gauge"
+            metric_type="gauge",
         )
 
         assert point.name == "test_metric"
@@ -62,7 +62,7 @@ class TestCloudMetricsClient:
         assert point.labels == {"env": "test"}
         assert point.metric_type == "gauge"
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_gauge_metric(self, mock_init):
         """Test recording a gauge metric when client is enabled."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -77,7 +77,7 @@ class TestCloudMetricsClient:
         assert client._metrics_buffer[0].value == 42.0
         assert client._metrics_buffer[0].metric_type == "gauge"
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_counter_metric(self, mock_init):
         """Test recording a counter metric."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -89,7 +89,7 @@ class TestCloudMetricsClient:
         assert len(client._metrics_buffer) == 1
         assert client._metrics_buffer[0].metric_type == "counter"
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_histogram_metric(self, mock_init):
         """Test recording a histogram metric."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -101,7 +101,7 @@ class TestCloudMetricsClient:
         assert len(client._metrics_buffer) == 1
         assert client._metrics_buffer[0].metric_type == "histogram"
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_buffer_flush_on_size(self, mock_init):
         """Test that buffer flushes when reaching size limit."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -115,7 +115,7 @@ class TestCloudMetricsClient:
         # Buffer should have flushed (possibly with some remaining items due to timing)
         assert len(client._metrics_buffer) <= 100
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_review_metrics(self, mock_init):
         """Test recording comprehensive review metrics."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -133,13 +133,13 @@ class TestCloudMetricsClient:
             suggestions_count=10,
             tokens_used=1500,
             cost_usd=0.01,
-            success=True
+            success=True,
         )
 
         # Should have recorded multiple metrics
         assert len(client._metrics_buffer) >= 5
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_agent_metrics(self, mock_init):
         """Test recording agent execution metrics."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -147,15 +147,12 @@ class TestCloudMetricsClient:
         client._client = Mock()
 
         client.record_agent_metrics(
-            agent_type="security",
-            duration_seconds=2.0,
-            suggestions_found=5,
-            success=True
+            agent_type="security", duration_seconds=2.0, suggestions_found=5, success=True
         )
 
         assert len(client._metrics_buffer) >= 3
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_llm_metrics(self, mock_init):
         """Test recording LLM call metrics."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)
@@ -167,12 +164,12 @@ class TestCloudMetricsClient:
             prompt_tokens=1000,
             completion_tokens=500,
             duration_seconds=1.5,
-            success=True
+            success=True,
         )
 
         assert len(client._metrics_buffer) >= 5
 
-    @patch('observability.metrics.CloudMetricsClient._initialize_client')
+    @patch("observability.metrics.CloudMetricsClient._initialize_client")
     def test_record_feedback_metrics(self, mock_init):
         """Test recording feedback metrics."""
         client = CloudMetricsClient(project_id="test-project", enabled=True)

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 from google.api_core.exceptions import GoogleAPICallError, ResourceExhausted
 from google.cloud.aiplatform import init as aiplatform_init
@@ -106,7 +106,7 @@ class VertexAIClient:
                             prompt, generation_config=generation_config
                         )
 
-                    return response.text
+                    return str(response.text)
 
                 else:
                     # PaLM model
@@ -118,7 +118,7 @@ class VertexAIClient:
                     }
 
                     response = model.predict(prompt, **parameters)
-                    return response.text
+                    return str(response.text)
 
             except ResourceExhausted as e:
                 last_error = e
@@ -148,7 +148,7 @@ class VertexAIClient:
         prompt: str,
         system_prompt: str | None = None,
         model_name: str = "gemini-pro",
-        **kwargs,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """
         Generate and parse JSON response.
@@ -187,9 +187,9 @@ You must respond with valid JSON only. Do not include markdown formatting, expla
                     break
 
             if json_match:
-                return json.loads(json_match)
+                return cast(dict[str, Any], json.loads(json_match))
             else:
-                return json.loads(response)
+                return cast(dict[str, Any], json.loads(response))
 
         except json.JSONDecodeError as e:
             raise Exception(

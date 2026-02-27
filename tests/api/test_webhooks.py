@@ -13,7 +13,7 @@ class TestGitHubWebhook:
         response = await async_client.post(
             "/webhooks/github",
             json={"action": "opened", "pull_request": {"number": 1}},
-            headers={"x-hub-signature-256": "sha256=test"}
+            headers={"x-hub-signature-256": "sha256=test"},
         )
 
         # Endpoint should accept the request (will process asynchronously)
@@ -29,7 +29,7 @@ class TestGitLabWebhook:
         response = await async_client.post(
             "/webhooks/gitlab",
             json={"object_kind": "merge_request"},
-            headers={"x-gitlab-token": "test-token"}
+            headers={"x-gitlab-token": "test-token"},
         )
 
         # Endpoint should accept the request
@@ -45,7 +45,7 @@ class TestBitbucketWebhook:
         response = await async_client.post(
             "/webhooks/bitbucket",
             json={"pullrequest": {"id": 1}},
-            headers={"x-hook-uuid": "test-uuid"}
+            headers={"x-hook-uuid": "test-uuid"},
         )
 
         # Endpoint should accept the request

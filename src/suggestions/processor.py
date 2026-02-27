@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from src.graph.state import Suggestion
 from src.llm.judge import LLMJudge
@@ -129,7 +129,7 @@ class SuggestionProcessor:
             enable_validation=False,
             enable_ranking=False,
         )
-        return result["suggestions"]
+        return cast(list[Suggestion], result["suggestions"])
 
     async def strict_process(self, suggestions: list[Suggestion]) -> list[Suggestion]:
         """
@@ -148,4 +148,4 @@ class SuggestionProcessor:
             enable_validation=True,
             enable_ranking=True,
         )
-        return result["suggestions"]
+        return cast(list[Suggestion], result["suggestions"])

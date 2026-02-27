@@ -47,7 +47,7 @@ class LangFuseClient:
                 logger.error(f"Failed to initialize LangFuse: {e}")
                 self.enabled = False
 
-    def _initialize_langfuse(self):
+    def _initialize_langfuse(self) -> None:
         """Initialize the LangFuse SDK."""
         try:
             from langfuse import Langfuse
@@ -192,7 +192,7 @@ class LangFuseClient:
         metadata: dict[str, Any] | None = None,
         level: str = "DEFAULT",
         status_message: str | None = None,
-    ):
+    ) -> None:
         """
         Update a span with output and completion status.
 
@@ -238,7 +238,7 @@ class LangFuseClient:
         trace_id: str | None = None,
         output: Any | None = None,
         metadata: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """
         End a trace and mark it complete.
 
@@ -277,7 +277,7 @@ class LangFuseClient:
         except Exception as e:
             logger.error(f"Failed to end trace: {e}")
 
-    def score_trace(self, trace_id: str, name: str, value: float, comment: str | None = None):
+    def score_trace(self, trace_id: str, name: str, value: float, comment: str | None = None) -> None:
         """
         Add a score to a trace.
 
@@ -314,7 +314,7 @@ class LangFuseClient:
         """Get span data by ID."""
         return self._spans.get(span_id)
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush all pending traces and spans to LangFuse."""
         if self.enabled and self._langfuse:
             try:

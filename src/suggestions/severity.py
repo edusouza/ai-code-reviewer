@@ -32,7 +32,7 @@ class SeverityClassifier:
         "pattern": {"default": SeverityLevel.SUGGESTION},
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def classify(self, suggestion: Suggestion) -> SeverityLevel:
@@ -108,7 +108,7 @@ class SeverityClassifier:
             Sorted suggestions
         """
 
-        def sort_key(s):
+        def sort_key(s: Suggestion) -> tuple[int, float, str]:
             severity = self.classify(s)
             return (
                 self.SEVERITY_ORDER[severity],

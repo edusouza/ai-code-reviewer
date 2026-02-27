@@ -86,13 +86,14 @@ class ReviewWorker:
         # Processing callback
         self._process_callback: Callable[[ReviewJob], Any] | None = None
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize Pub/Sub clients."""
         try:
+            from typing import cast
             self.subscriber = SubscriberClient()
             self.publisher = PublisherClient()
 
-            self.subscription_path = self.subscriber.subscription_path(
+            self.subscription_path = cast(SubscriberClient, self.subscriber).subscription_path(
                 self.project_id, self.subscription_id
             )
 
@@ -105,7 +106,7 @@ class ReviewWorker:
             logger.error(f"Failed to initialize Pub/Sub clients: {e}")
             raise
 
-    def on_job(self, callback: Callable[[ReviewJob], Any]):
+    def on_job(self, callback: Callable[[ReviewJob], Any]) -> None:
         """
         Decorator to register job processing callback.
 
@@ -113,9 +114,9 @@ class ReviewWorker:
             callback: Async function to process jobs
         """
         self._process_callback = callback
-        return callback
+        return None
 
-    def start(self):
+    def start(self) -> None:
         """Start the worker."""
         if not self.subscriber:
             self.initialize()
@@ -134,6 +135,7 @@ class ReviewWorker:
 
         # Start streaming pull
         from google.cloud.pubsub_v1.types import FlowControl
+
         flow_control = FlowControl(max_messages=self.max_workers * 2)
 
         self.streaming_pull_future = self.subscriber.subscribe(
@@ -153,7 +155,7 @@ class ReviewWorker:
             self.streaming_pull_future.cancel()
             self.streaming_pull_future.result()
 
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum: int, frame: Any) -> None:
         """Handle shutdown signals."""
         logger.info(f"Received signal {signum}, shutting down...")
         self._shutdown = True
@@ -163,7 +165,7 @@ class ReviewWorker:
 
         sys.exit(0)
 
-    def _message_callback(self, message: Message):
+    def _message_callback(self, message: Message) -> None:
         """Callback for received messages."""
         # Create new event loop for this thread if needed
         try:
@@ -178,7 +180,7 @@ class ReviewWorker:
         # Schedule the async processing
         loop.create_task(self._process_message(message))
 
-    async def _process_message(self, message: Message):
+    async def _process_message(self, message: Message) -> None:
         """Process a single message."""
         self._active_workers += 1
         try:
@@ -221,7 +223,7 @@ class ReviewWorker:
         message: Message,
         job: ReviewJob | None,
         error: Exception,
-    ):
+    ) -> None:
         """Handle message processing failure."""
         delivery_attempt = message.delivery_attempt or 1
 
@@ -244,7 +246,7 @@ class ReviewWorker:
             message.nack()
             self.jobs_failed += 1
 
-    async def _send_to_dlq(self, message: Message, error: Exception):
+    async def _send_to_dlq(self, message: Message, error: Exception) -> None:
         """Send failed message to dead letter queue."""
         if not self.publisher:
             logger.error("Cannot send to DLQ: publisher not initialized")
@@ -331,7 +333,7 @@ class ReviewWorker:
             "active_workers": self._active_workers,
         }
 
-    def close(self):
+    def close(self) -> None:
         """Close the worker and cleanup resources."""
         logger.info("Closing review worker...")
 
@@ -380,14 +382,14 @@ def get_worker() -> ReviewWorker | None:
 
 
 # Example usage with LangGraph workflow
-async def process_review_job(job: ReviewJob):
+async def process_review_job(job: ReviewJob) -> None:
     """
     Example job processor that triggers the LangGraph workflow.
 
     This function would be registered with the worker using:
 
     @worker.on_job
-    async def process_review_job(job: ReviewJob):
+    async def process_review_job(job: ReviewJob) -> None:
         ...
     """
     from graph.builder import build_review_graph

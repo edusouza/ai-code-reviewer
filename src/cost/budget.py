@@ -23,7 +23,7 @@ class BudgetConfig:
     # Per-repo budgets
     repo_daily_budgets: dict[str, float] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.repo_daily_budgets is None:
             self.repo_daily_budgets = {}
 
@@ -31,7 +31,7 @@ class BudgetConfig:
 class BudgetEnforcer:
     """Enforce budget limits on reviews."""
 
-    def __init__(self, config: BudgetConfig | None = None, firestore_db: Any | None = None):
+    def __init__(self, config: BudgetConfig | None = None, firestore_db: Any | None = None) -> None:
         """
         Initialize budget enforcer.
 
@@ -43,7 +43,7 @@ class BudgetEnforcer:
         self._db = firestore_db
         self._initialized = False
 
-    async def _initialize_db(self):
+    async def _initialize_db(self) -> None:
         """Lazy initialization of Firestore."""
         if self._initialized or self._db is not None:
             return
@@ -202,7 +202,7 @@ class BudgetEnforcer:
                 f"Monthly: {monthly_status['percentage']:.1f}%"
             )
 
-        return can_proceed
+        return bool(can_proceed)
 
     async def get_budget_summary(self) -> dict[str, Any]:
         """Get comprehensive budget summary."""
@@ -241,7 +241,7 @@ class BudgetEnforcer:
                 None, lambda: list(query.stream())
             )
 
-            return sum(doc.to_dict().get("cost_usd", 0) for doc in docs)
+            return float(sum(doc.to_dict().get("cost_usd", 0) for doc in docs))
 
         except Exception as e:
             logger.error(f"Failed to get daily spend: {e}")
@@ -260,7 +260,7 @@ class BudgetEnforcer:
                 None, lambda: list(query.stream())
             )
 
-            return sum(doc.to_dict().get("cost_usd", 0) for doc in docs)
+            return float(sum(doc.to_dict().get("cost_usd", 0) for doc in docs))
 
         except Exception as e:
             logger.error(f"Failed to get PR spend: {e}")
@@ -282,7 +282,7 @@ class BudgetEnforcer:
                 None, lambda: list(query.stream())
             )
 
-            return sum(doc.to_dict().get("cost_usd", 0) for doc in docs)
+            return float(sum(doc.to_dict().get("cost_usd", 0) for doc in docs))
 
         except Exception as e:
             logger.error(f"Failed to get monthly spend: {e}")

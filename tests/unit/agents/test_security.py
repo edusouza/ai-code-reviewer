@@ -1,4 +1,5 @@
 """Tests for Security agent."""
+
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -63,7 +64,7 @@ class TestSecurityAgent:
             severity="error",
             suggestion="Use safe method",
             category="security",
-            confidence=0.95
+            confidence=0.95,
         )
 
         assert suggestion["file_path"] == "src/main.py"
@@ -86,7 +87,7 @@ class TestSecurityAgent:
             "start_line": 10,
             "end_line": 15,
             "content": "def query(user_id):\n    cursor.execute('SELECT * FROM users WHERE id = ' + user_id)\n    return cursor.fetchall()",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -105,13 +106,16 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "DB_PASSWORD = 'super_secret_123'\nAPI_KEY = 'sk-abc123'",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
 
         assert len(suggestions) > 0
-        assert any("credential" in s["message"].lower() or "secret" in s["message"].lower() for s in suggestions)
+        assert any(
+            "credential" in s["message"].lower() or "secret" in s["message"].lower()
+            for s in suggestions
+        )
 
     @pytest.mark.asyncio
     async def test_analyze_eval_usage(self):
@@ -124,7 +128,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "def process(data):\n    result = eval(data)\n    return result",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -143,7 +147,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "import pickle\n\ndef load_cache(data):\n    return pickle.loads(data)",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -162,7 +166,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "function render(userInput) {\n    element.innerHTML = userInput;\n}",
-            "language": "javascript"
+            "language": "javascript",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -181,7 +185,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "import os\n\ndef cleanup(path):\n    os.system('rm -rf ' + path)",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -200,7 +204,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "import hashlib\n\ndef hash_password(pwd):\n    return hashlib.md5(pwd.encode()).hexdigest()",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -219,7 +223,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "import requests\n\ndef fetch(url):\n    return requests.get(url, verify=False)",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -238,7 +242,7 @@ class TestSecurityAgent:
             "start_line": 1,
             "end_line": 5,
             "content": "# Project\n\nThis is a markdown file.",
-            "language": "markdown"
+            "language": "markdown",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -250,7 +254,9 @@ class TestSecurityAgent:
     async def test_analyze_with_llm(self):
         """Test LLM-based analysis."""
         mock_llm = Mock()
-        mock_llm.generate = AsyncMock(return_value='[{"line_number": 5, "message": "Complex vulnerability", "severity": "error", "suggestion": "Fix it", "confidence": 0.8}]')
+        mock_llm.generate = AsyncMock(
+            return_value='[{"line_number": 5, "message": "Complex vulnerability", "severity": "error", "suggestion": "Fix it", "confidence": 0.8}]'
+        )
 
         with patch("agents.security.VertexAIClient", return_value=mock_llm):
             agent = SecurityAgent()
@@ -259,8 +265,9 @@ class TestSecurityAgent:
             "file_path": "src/complex.py",
             "start_line": 1,
             "end_line": 20,
-            "content": "def complex_function(data):\n" + "    pass\n" * 19,  # Make it long enough for LLM
-            "language": "python"
+            "content": "def complex_function(data):\n"
+            + "    pass\n" * 19,  # Make it long enough for LLM
+            "language": "python",
         }
 
         _ = await agent.analyze(chunk, {})
@@ -285,7 +292,7 @@ class TestSecurityAgentEdgeCases:
             "start_line": 1,
             "end_line": 1,
             "content": "",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})
@@ -306,7 +313,7 @@ class TestSecurityAgentEdgeCases:
             "start_line": 1,
             "end_line": 20,
             "content": "def test():\n    password = 'secret'\n    return password\n" * 5,
-            "language": "python"
+            "language": "python",
         }
 
         # Should not raise exception, return pattern-based results
@@ -326,7 +333,7 @@ class TestSecurityAgentEdgeCases:
             "start_line": 10,  # Chunk starts at line 10
             "end_line": 15,
             "content": "line1\nline2\npassword = 'secret'\nline4\nline5",
-            "language": "python"
+            "language": "python",
         }
 
         suggestions = await agent.analyze(chunk, {})

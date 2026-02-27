@@ -1,4 +1,5 @@
 """Tests for GitLab provider adapter."""
+
 import hashlib
 import hmac
 from unittest.mock import AsyncMock, Mock, patch
@@ -53,11 +54,7 @@ class TestGitLabAdapter:
         secret = "mysecret"
         payload = b'{"object_kind": "merge_request"}'
 
-        expected = hmac.new(
-            secret.encode(),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
+        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
 
         adapter = GitLabAdapter(webhook_secret=secret)
         assert adapter.verify_signature(payload, expected) is True
@@ -105,8 +102,8 @@ class TestGitLabAdapter:
                 "source_branch": "feature",
                 "target_branch": "main",
                 "author_id": "user1",
-                "last_commit": {"id": "abc123"}
-            }
+                "last_commit": {"id": "abc123"},
+            },
         }
 
         event = adapter.parse_webhook(payload, gitlab_headers)
@@ -128,8 +125,8 @@ class TestGitLabAdapter:
                 "source_branch": "feature",
                 "target_branch": "main",
                 "author_id": "user1",
-                "last_commit": {"id": "abc123"}
-            }
+                "last_commit": {"id": "abc123"},
+            },
         }
 
         event = adapter.parse_webhook(payload, gitlab_headers)
@@ -153,7 +150,7 @@ class TestGitLabAdapter:
         payload = {
             "object_kind": "issue",  # Wrong kind
             "project": {"name": "repo", "namespace": "owner"},
-            "object_attributes": {"iid": 1, "title": "Test"}
+            "object_attributes": {"iid": 1, "title": "Test"},
         }
 
         event = adapter.parse_webhook(payload, gitlab_headers)
@@ -173,8 +170,8 @@ class TestGitLabAdapter:
                 "action": "approved",  # Unsupported
                 "source_branch": "feature",
                 "target_branch": "main",
-                "last_commit": {"id": "abc"}
-            }
+                "last_commit": {"id": "abc"},
+            },
         }
 
         event = adapter.parse_webhook(payload, gitlab_headers)
@@ -190,10 +187,9 @@ class TestGitLabAdapter:
         sample_pr_event.provider = "gitlab"
 
         mock_response = Mock()
-        mock_response.json = Mock(return_value=[
-            {"diff": "diff content 1"},
-            {"diff": "diff content 2"}
-        ])
+        mock_response.json = Mock(
+            return_value=[{"diff": "diff content 1"}, {"diff": "diff content 2"}]
+        )
         mock_response.raise_for_status = Mock()
 
         mock_client = Mock()
@@ -252,7 +248,13 @@ class TestGitLabAdapter:
         sample_pr_event.provider = "gitlab"
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion="fix")
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion="fix",
+            )
         ]
 
         mock_response = Mock()
@@ -288,7 +290,13 @@ class TestGitLabAdapter:
         sample_pr_event.provider = "gitlab"
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion=None)
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion=None,
+            )
         ]
 
         mock_response = Mock()
@@ -316,7 +324,7 @@ class TestGitLabAdapterEdgeCases:
 
         payload = {
             "object_kind": "merge_request",
-            "project": {"name": "repo", "namespace": "owner"}
+            "project": {"name": "repo", "namespace": "owner"},
             # Missing object_attributes
         }
 
@@ -338,8 +346,8 @@ class TestGitLabAdapterEdgeCases:
                 "action": "open",
                 "source_branch": "feature",
                 "target_branch": "main",
-                "last_commit": {"id": "abc"}
-            }
+                "last_commit": {"id": "abc"},
+            },
             # Missing project
         }
 

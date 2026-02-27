@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
 
     # Global exception handler
     @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
+    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         """Handle all unhandled exceptions."""
         logger.exception("Unhandled exception occurred")
         return JSONResponse(
@@ -52,13 +52,13 @@ def create_app() -> FastAPI:
 
     # Startup event
     @app.on_event("startup")
-    async def startup_event():
+    async def startup_event() -> None:
         """Run on application startup."""
         logger.info(f"Starting {settings.app_name} v{settings.version}")
 
     # Shutdown event
     @app.on_event("shutdown")
-    async def shutdown_event():
+    async def shutdown_event() -> None:
         """Run on application shutdown."""
         logger.info(f"Shutting down {settings.app_name}")
 

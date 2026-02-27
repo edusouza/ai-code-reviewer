@@ -1,4 +1,5 @@
 """Tests for Bitbucket provider adapter."""
+
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -14,11 +15,7 @@ class TestBitbucketAdapter:
 
     def test_init_with_credentials(self):
         """Test adapter initialization with credentials."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
         assert adapter.webhook_secret == "secret"
         assert adapter.username == "user"
         assert adapter.app_password == "pass"
@@ -95,14 +92,14 @@ class TestBitbucketAdapter:
                 "source": {
                     "branch": {"name": "feature"},
                     "commit": {"hash": "abc123"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "destination": {
                     "branch": {"name": "main"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "author": {"username": "user1"},
-                "links": {"html": {"href": "https://bitbucket.org/owner/repo/pull-requests/1"}}
+                "links": {"html": {"href": "https://bitbucket.org/owner/repo/pull-requests/1"}},
             }
         }
 
@@ -124,14 +121,14 @@ class TestBitbucketAdapter:
                 "source": {
                     "branch": {"name": "feature"},
                     "commit": {"hash": "abc123"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "destination": {
                     "branch": {"name": "main"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "author": {"username": "user1"},
-                "links": {"html": {"href": "https://bitbucket.org/owner/repo/pull-requests/1"}}
+                "links": {"html": {"href": "https://bitbucket.org/owner/repo/pull-requests/1"}},
             }
         }
 
@@ -181,11 +178,7 @@ class TestBitbucketAdapter:
     @pytest.mark.asyncio
     async def test_fetch_pr_success(self, sample_pr_event):
         """Test successful PR fetch."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
 
         sample_pr_event.provider = "bitbucket"
 
@@ -228,11 +221,7 @@ class TestBitbucketAdapter:
     @pytest.mark.asyncio
     async def test_fetch_pr_error(self, sample_pr_event):
         """Test PR fetch with HTTP error."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
 
         sample_pr_event.provider = "bitbucket"
 
@@ -247,16 +236,18 @@ class TestBitbucketAdapter:
     @pytest.mark.asyncio
     async def test_post_comment_success(self, sample_pr_event):
         """Test successful comment posting."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
 
         sample_pr_event.provider = "bitbucket"
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion="fix")
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion="fix",
+            )
         ]
 
         mock_response = Mock()
@@ -287,16 +278,18 @@ class TestBitbucketAdapter:
     @pytest.mark.asyncio
     async def test_post_comment_no_summary(self, sample_pr_event):
         """Test comment posting without summary."""
-        adapter = BitbucketAdapter(
-            webhook_secret="secret",
-            username="user",
-            app_password="pass"
-        )
+        adapter = BitbucketAdapter(webhook_secret="secret", username="user", app_password="pass")
 
         sample_pr_event.provider = "bitbucket"
 
         comments = [
-            Mock(file_path="file.py", line_number=10, message="Test", severity="warning", suggestion=None)
+            Mock(
+                file_path="file.py",
+                line_number=10,
+                message="Test",
+                severity="warning",
+                suggestion=None,
+            )
         ]
 
         mock_response = Mock()
@@ -330,14 +323,11 @@ class TestBitbucketAdapterEdgeCases:
                 "source": {
                     "branch": {"name": "feature"},
                     "commit": {"hash": "abc"},
-                    "repository": {"name": "repo"}  # No full_name
+                    "repository": {"name": "repo"},  # No full_name
                 },
-                "destination": {
-                    "branch": {"name": "main"},
-                    "repository": {"name": "repo"}
-                },
+                "destination": {"branch": {"name": "main"}, "repository": {"name": "repo"}},
                 "author": {"username": "user"},
-                "links": {"html": {"href": "http://example.com"}}
+                "links": {"html": {"href": "http://example.com"}},
             }
         }
 
@@ -358,14 +348,14 @@ class TestBitbucketAdapterEdgeCases:
                 "source": {
                     "branch": {"name": "feature"},
                     "commit": {"hash": "abc"},
-                    "repository": {"name": "repo", "full_name": "workspace/project/repo"}
+                    "repository": {"name": "repo", "full_name": "workspace/project/repo"},
                 },
                 "destination": {
                     "branch": {"name": "main"},
-                    "repository": {"name": "repo", "full_name": "workspace/project/repo"}
+                    "repository": {"name": "repo", "full_name": "workspace/project/repo"},
                 },
                 "author": {"username": "user"},
-                "links": {"html": {"href": "http://example.com"}}
+                "links": {"html": {"href": "http://example.com"}},
             }
         }
 
@@ -387,14 +377,14 @@ class TestBitbucketAdapterEdgeCases:
                 "source": {
                     "branch": {"name": "feature"},
                     "commit": {"hash": "abc"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "destination": {
                     "branch": {"name": "main"},
-                    "repository": {"name": "repo", "full_name": "owner/repo"}
+                    "repository": {"name": "repo", "full_name": "owner/repo"},
                 },
                 "author": {"username": "user"},
-                "links": {}  # No html link
+                "links": {},  # No html link
             }
         }
 

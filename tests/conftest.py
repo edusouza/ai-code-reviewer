@@ -1,7 +1,6 @@
 """Test fixtures and configuration."""
 
 from datetime import datetime
-from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -22,29 +21,14 @@ def sample_github_pr_payload():
             "head": {
                 "ref": "feature/new-thing",
                 "sha": "abc123def456",
-                "repo": {
-                    "full_name": "myorg/myrepo"
-                }
+                "repo": {"full_name": "myorg/myrepo"},
             },
-            "base": {
-                "ref": "main",
-                "sha": "def789abc012"
-            },
-            "user": {
-                "login": "johndoe"
-            },
-            "html_url": "https://github.com/myorg/myrepo/pull/42"
+            "base": {"ref": "main", "sha": "def789abc012"},
+            "user": {"login": "johndoe"},
+            "html_url": "https://github.com/myorg/myrepo/pull/42",
         },
-        "repository": {
-            "name": "myrepo",
-            "full_name": "myorg/myrepo",
-            "owner": {
-                "login": "myorg"
-            }
-        },
-        "sender": {
-            "login": "johndoe"
-        }
+        "repository": {"name": "myrepo", "full_name": "myorg/myrepo", "owner": {"login": "myorg"}},
+        "sender": {"login": "johndoe"},
     }
 
 
@@ -57,7 +41,7 @@ def sample_gitlab_mr_payload():
         "project": {
             "name": "myrepo",
             "namespace": "myorg",
-            "web_url": "https://gitlab.com/myorg/myrepo"
+            "web_url": "https://gitlab.com/myorg/myrepo",
         },
         "object_attributes": {
             "iid": 42,
@@ -72,9 +56,9 @@ def sample_gitlab_mr_payload():
             "last_commit": {
                 "id": "abc123def456",
                 "message": "Add new feature",
-                "timestamp": datetime.now().isoformat()
-            }
-        }
+                "timestamp": datetime.now().isoformat(),
+            },
+        },
     }
 
 
@@ -88,35 +72,16 @@ def sample_bitbucket_pr_payload():
             "description": "This PR adds a new feature",
             "state": "OPEN",
             "source": {
-                "branch": {
-                    "name": "feature/new-thing"
-                },
-                "commit": {
-                    "hash": "abc123def456"
-                },
-                "repository": {
-                    "name": "myrepo",
-                    "full_name": "myorg/myrepo"
-                }
+                "branch": {"name": "feature/new-thing"},
+                "commit": {"hash": "abc123def456"},
+                "repository": {"name": "myrepo", "full_name": "myorg/myrepo"},
             },
             "destination": {
-                "branch": {
-                    "name": "main"
-                },
-                "repository": {
-                    "name": "myrepo",
-                    "full_name": "myorg/myrepo"
-                }
+                "branch": {"name": "main"},
+                "repository": {"name": "myrepo", "full_name": "myorg/myrepo"},
             },
-            "author": {
-                "username": "johndoe",
-                "display_name": "John Doe"
-            },
-            "links": {
-                "html": {
-                    "href": "https://bitbucket.org/myorg/myrepo/pull-requests/42"
-                }
-            }
+            "author": {"username": "johndoe", "display_name": "John Doe"},
+            "links": {"html": {"href": "https://bitbucket.org/myorg/myrepo/pull-requests/42"}},
         }
     }
 
@@ -125,6 +90,7 @@ def sample_bitbucket_pr_payload():
 def sample_pr_event():
     """Sample normalized PREvent."""
     from models.events import PRAction, PREvent
+
     return PREvent(
         provider="github",
         repo_owner="myorg",
@@ -137,7 +103,7 @@ def sample_pr_event():
         pr_title="Add new feature",
         pr_body="This PR adds a new feature",
         author="johndoe",
-        url="https://github.com/myorg/myrepo/pull/42"
+        url="https://github.com/myorg/myrepo/pull/42",
     )
 
 
@@ -145,12 +111,13 @@ def sample_pr_event():
 def sample_chunk():
     """Sample code chunk for testing agents."""
     from graph.state import ChunkInfo
+
     return ChunkInfo(
         file_path="src/main.py",
         start_line=1,
         end_line=10,
         content="def process(data):\n    password = 'secret123'\n    eval(data)\n    return data\n",
-        language="python"
+        language="python",
     )
 
 
@@ -236,7 +203,7 @@ def sample_suggestions():
             "suggestion": "Use parameterized queries",
             "agent_type": "security",
             "confidence": 0.95,
-            "category": "security"
+            "category": "security",
         },
         {
             "file_path": "src/main.py",
@@ -246,7 +213,7 @@ def sample_suggestions():
             "suggestion": None,
             "agent_type": "style",
             "confidence": 0.9,
-            "category": "style"
+            "category": "style",
         },
         {
             "file_path": "src/utils.py",
@@ -256,8 +223,8 @@ def sample_suggestions():
             "suggestion": "Add null check before accessing",
             "agent_type": "logic",
             "confidence": 0.8,
-            "category": "logic"
-        }
+            "category": "logic",
+        },
     ]
 
 
@@ -265,14 +232,16 @@ def sample_suggestions():
 def mock_llm_client():
     """Mock LLM client."""
     client = Mock()
-    client.generate = AsyncMock(return_value='[]')
-    client.generate_json = AsyncMock(return_value={
-        "style_rules": {},
-        "security_priorities": {"high": [], "medium": [], "low": []},
-        "ignore_patterns": [],
-        "code_patterns": {},
-        "review_settings": {}
-    })
+    client.generate = AsyncMock(return_value="[]")
+    client.generate_json = AsyncMock(
+        return_value={
+            "style_rules": {},
+            "security_priorities": {"high": [], "medium": [], "low": []},
+            "ignore_patterns": [],
+            "code_patterns": {},
+            "review_settings": {},
+        }
+    )
     return client
 
 
@@ -295,32 +264,26 @@ def github_headers():
     return {
         "X-GitHub-Event": "pull_request",
         "X-GitHub-Delivery": "test-delivery-id",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
 
 @pytest.fixture
 def gitlab_headers():
     """Sample GitLab webhook headers."""
-    return {
-        "X-Gitlab-Event": "Merge Request Hook",
-        "X-Gitlab-Token": "test-token"
-    }
+    return {"X-Gitlab-Event": "Merge Request Hook", "X-Gitlab-Token": "test-token"}
 
 
 @pytest.fixture
 def bitbucket_headers():
     """Sample Bitbucket webhook headers."""
-    return {
-        "X-Event-Key": "pullrequest:created",
-        "Content-Type": "application/json"
-    }
+    return {"X-Event-Key": "pullrequest:created", "Content-Type": "application/json"}
 
 
 @pytest.fixture
 def sample_code_diff():
     """Sample code diff for testing."""
-    return '''diff --git a/src/main.py b/src/main.py
+    return """diff --git a/src/main.py b/src/main.py
 index 1234567..abcdefg 100644
 --- a/src/main.py
 +++ b/src/main.py
@@ -361,18 +324,19 @@ index 9876543..fedcba9 100644
 +const password = "hardcoded_secret";
 +
  module.exports = { process };
-'''
+"""
 
 
 @pytest.fixture
 def sample_review_config():
     """Sample review configuration."""
     from graph.state import ReviewConfig
+
     return ReviewConfig(
         max_suggestions=50,
         severity_threshold="suggestion",
         enable_agents={"security": True, "style": True, "logic": True},
-        custom_rules={}
+        custom_rules={},
     )
 
 
@@ -403,10 +367,10 @@ def sample_review_state(sample_pr_event, sample_review_config):
             completed_at=None,
             current_step="init",
             agent_results={},
-            error_count=0
+            error_count=0,
         ),
         error=None,
-        should_stop=False
+        should_stop=False,
     )
 
 

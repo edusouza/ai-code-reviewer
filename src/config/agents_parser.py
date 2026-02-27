@@ -3,7 +3,7 @@
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from config.default_agents import get_default_config
 from llm.client import VertexAIClient
@@ -257,7 +257,7 @@ class AgentsParser:
         if patterns:
             return list(set(self.default_config["ignore_patterns"] + patterns))
 
-        return self.default_config["ignore_patterns"]
+        return cast(list[str], self.default_config["ignore_patterns"])
 
     def _extract_code_patterns(self, sections: dict[str, str]) -> dict[str, dict[str, list[str]]]:
         """Extract good/bad code patterns from sections."""
@@ -447,16 +447,14 @@ Respond with valid JSON only."""
         default = self.default_config
 
         has_style = bool(
-            config.style_rules
-            and config.style_rules != default.get("style_rules", {})
+            config.style_rules and config.style_rules != default.get("style_rules", {})
         )
         has_security = bool(
             config.security_priorities
             and config.security_priorities != default.get("security_priorities", {})
         )
         has_patterns = bool(
-            config.code_patterns
-            and config.code_patterns != default.get("code_patterns", {})
+            config.code_patterns and config.code_patterns != default.get("code_patterns", {})
         )
 
         # If we have less than 2 major sections populated, consider it sparse
@@ -493,7 +491,12 @@ Respond with valid JSON only."""
             if pattern.endswith("/**"):
                 prefix = pattern[:-3]
                 # Check if it's a complete path component, not just a prefix
-                if file_path == prefix or file_path.startswith(prefix + "/") or f"/{prefix}/" in file_path or file_path.endswith(f"/{prefix}"):
+                if (
+                    file_path == prefix
+                    or file_path.startswith(prefix + "/")
+                    or f"/{prefix}/" in file_path
+                    or file_path.endswith(f"/{prefix}")
+                ):
                     return True
 
             # Handle file wildcards

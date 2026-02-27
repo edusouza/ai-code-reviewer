@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from config.settings import settings
 from feedback.classifier import EmojiClassifier, FeedbackType
@@ -28,7 +28,7 @@ class FeedbackProcessor:
         self._db = firestore_db
         self._initialized = False
 
-    async def _initialize_db(self):
+    async def _initialize_db(self) -> None:
         """Lazy initialization of Firestore client."""
         if self._initialized or self._db is not None:
             return
@@ -150,7 +150,7 @@ class FeedbackProcessor:
                 return str(feedback_data[key])
         return ""
 
-    async def _store_feedback(self, record: dict[str, Any]):
+    async def _store_feedback(self, record: dict[str, Any]) -> None:
         """Store feedback record in Firestore."""
         if not self._db:
             logger.warning("Firestore not available, skipping storage")
@@ -174,7 +174,7 @@ class FeedbackProcessor:
             logger.error(f"Failed to store feedback: {e}")
             raise
 
-    async def _submit_to_langfuse(self, record: dict[str, Any]):
+    async def _submit_to_langfuse(self, record: dict[str, Any]) -> None:
         """Submit feedback score to LangFuse."""
         langfuse = get_langfuse()
         if not langfuse:
@@ -220,7 +220,7 @@ class FeedbackProcessor:
             )
 
             if docs:
-                return docs[0].id
+                return cast(str, docs[0].id)
 
             return None
 
@@ -228,7 +228,7 @@ class FeedbackProcessor:
             logger.error(f"Failed to find review ID: {e}")
             return None
 
-    async def _record_metrics(self, record: dict[str, Any]):
+    async def _record_metrics(self, record: dict[str, Any]) -> None:
         """Record feedback metrics."""
         metrics = get_metrics_client()
         if not metrics:

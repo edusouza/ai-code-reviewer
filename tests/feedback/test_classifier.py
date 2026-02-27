@@ -92,7 +92,7 @@ class TestEmojiClassifier:
             score=0.8,
             confidence=0.9,
             primary_emoji="👍",
-            all_emojis=["👍"]
+            all_emojis=["👍"],
         )
 
         description = classifier.get_sentiment_description(result)
@@ -108,7 +108,7 @@ class TestEmojiClassifier:
             score=-0.8,
             confidence=0.9,
             primary_emoji="👎",
-            all_emojis=["👎"]
+            all_emojis=["👎"],
         )
 
         description = classifier.get_sentiment_description(result)

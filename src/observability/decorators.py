@@ -4,7 +4,7 @@ import functools
 import inspect
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import Any
 
@@ -13,7 +13,7 @@ from observability.langfuse_client import current_span_id, current_trace_id, get
 logger = logging.getLogger(__name__)
 
 
-def trace_workflow(name: str | None = None):
+def trace_workflow(name: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to trace an entire workflow.
 
@@ -26,9 +26,9 @@ def trace_workflow(name: str | None = None):
             ...
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def async_wrapper(*args, **kwargs):
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
             trace_name = name or func.__name__
 
@@ -63,7 +63,7 @@ def trace_workflow(name: str | None = None):
                 raise
 
         @functools.wraps(func)
-        def sync_wrapper(*args, **kwargs):
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
             trace_name = name or func.__name__
 
@@ -97,7 +97,7 @@ def trace_workflow(name: str | None = None):
     return decorator
 
 
-def trace_agent(name: str | None = None, agent_type: str | None = None):
+def trace_agent(name: str | None = None, agent_type: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to trace agent execution.
 
@@ -111,9 +111,9 @@ def trace_agent(name: str | None = None, agent_type: str | None = None):
             ...
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def async_wrapper(*args, **kwargs):
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
             span_name = name or func.__name__
 
@@ -167,7 +167,7 @@ def trace_agent(name: str | None = None, agent_type: str | None = None):
                 raise
 
         @functools.wraps(func)
-        def sync_wrapper(*args, **kwargs):
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
             span_name = name or func.__name__
 
@@ -219,7 +219,7 @@ def trace_agent(name: str | None = None, agent_type: str | None = None):
     return decorator
 
 
-def trace_llm(model_name: str | None = None):
+def trace_llm(model_name: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to trace LLM calls.
 
@@ -232,9 +232,9 @@ def trace_llm(model_name: str | None = None):
             ...
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def async_wrapper(*args, **kwargs):
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
 
             trace_id = current_trace_id.get()
@@ -293,7 +293,7 @@ def trace_llm(model_name: str | None = None):
                 raise
 
         @functools.wraps(func)
-        def sync_wrapper(*args, **kwargs):
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             langfuse = get_langfuse()
 
             trace_id = current_trace_id.get()
@@ -349,7 +349,7 @@ def trace_llm(model_name: str | None = None):
 
 
 @contextmanager
-def trace_span(name: str, metadata: dict[str, Any] | None = None):
+def trace_span(name: str, metadata: dict[str, Any] | None = None) -> Iterator[Any]:
     """
     Context manager for creating a span.
 
@@ -377,7 +377,7 @@ def trace_span(name: str, metadata: dict[str, Any] | None = None):
         raise
 
 
-def _extract_metadata(func: Callable, args: tuple, kwargs: dict) -> dict[str, Any]:
+def _extract_metadata(func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any]:
     """Extract metadata from function arguments."""
     metadata: dict[str, Any] = {"function": func.__name__, "module": func.__module__}
 
@@ -393,7 +393,7 @@ def _extract_metadata(func: Callable, args: tuple, kwargs: dict) -> dict[str, An
     return metadata
 
 
-def _extract_input_data(args: tuple, kwargs: dict) -> dict[str, Any] | None:
+def _extract_input_data(args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any] | None:
     """Extract input data from function arguments."""
     data = {}
 
@@ -407,7 +407,7 @@ def _extract_input_data(args: tuple, kwargs: dict) -> dict[str, Any] | None:
     return data if data else None
 
 
-def _extract_prompt(args: tuple, kwargs: dict) -> str | None:
+def _extract_prompt(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str | None:
     """Extract prompt from LLM call arguments."""
     # Common argument names for prompts
     prompt_keys = ["prompt", "messages", "content", "input", "text"]
@@ -424,7 +424,7 @@ def _extract_prompt(args: tuple, kwargs: dict) -> str | None:
     return None
 
 
-def _extract_generation_params(kwargs: dict) -> dict[str, Any]:
+def _extract_generation_params(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Extract generation parameters from kwargs."""
     params = {}
     param_keys = ["temperature", "max_tokens", "top_p", "top_k", "model"]

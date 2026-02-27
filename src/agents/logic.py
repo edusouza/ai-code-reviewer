@@ -6,10 +6,10 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class LogicAgent(BaseAgent):
+class LogicAgent(BaseAgent):  # type: ignore[misc]
     """Agent that finds bugs and logic errors in code."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="logic", priority=2)
         self.llm_client = VertexAIClient()
         self.bug_patterns = self._load_bug_patterns()
@@ -278,4 +278,5 @@ Return JSON array with: line_number, message, severity, suggestion, confidence""
 
     def should_analyze(self, chunk: ChunkInfo) -> bool:
         """Logic agent analyzes all code files."""
-        return chunk["language"] != "unknown"
+        language: str = chunk.get("language", "unknown")
+        return language != "unknown"

@@ -6,10 +6,10 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class SecurityAgent(BaseAgent):
+class SecurityAgent(BaseAgent):  # type: ignore[misc]
     """Agent that finds security vulnerabilities in code."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="security", priority=1)
         self.llm_client = VertexAIClient()
         self.patterns = self._load_security_patterns()
@@ -175,4 +175,5 @@ Find any security issues and return them as a JSON array with fields: line_numbe
 
     def should_analyze(self, chunk: ChunkInfo) -> bool:
         """Security agent analyzes all code files."""
-        return chunk["language"] != "unknown"
+        language: str = chunk.get("language", "unknown")
+        return language != "unknown"

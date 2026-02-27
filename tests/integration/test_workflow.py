@@ -1,4 +1,5 @@
 """Integration tests for LangGraph workflow."""
+
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -35,8 +36,20 @@ class TestWorkflowStateTransitions:
     def test_should_continue_chunks_more_chunks(self, sample_review_state):
         """Test should_continue_chunks when more chunks exist."""
         sample_review_state["chunks"] = [
-            {"file_path": "file1.py", "start_line": 1, "end_line": 10, "content": "", "language": "python"},
-            {"file_path": "file2.py", "start_line": 1, "end_line": 10, "content": "", "language": "python"}
+            {
+                "file_path": "file1.py",
+                "start_line": 1,
+                "end_line": 10,
+                "content": "",
+                "language": "python",
+            },
+            {
+                "file_path": "file2.py",
+                "start_line": 1,
+                "end_line": 10,
+                "content": "",
+                "language": "python",
+            },
         ]
         sample_review_state["current_chunk_index"] = 0
 
@@ -47,7 +60,13 @@ class TestWorkflowStateTransitions:
     def test_should_continue_chunks_no_more_chunks(self, sample_review_state):
         """Test should_continue_chunks when no more chunks."""
         sample_review_state["chunks"] = [
-            {"file_path": "file1.py", "start_line": 1, "end_line": 10, "content": "", "language": "python"}
+            {
+                "file_path": "file1.py",
+                "start_line": 1,
+                "end_line": 10,
+                "content": "",
+                "language": "python",
+            }
         ]
         sample_review_state["current_chunk_index"] = 1  # Past the end
 
@@ -83,7 +102,9 @@ class TestWorkflowStateTransitions:
 
     def test_has_suggestions_should_stop(self, sample_review_state):
         """Test has_suggestions when should_stop is True."""
-        sample_review_state["suggestions"] = [{"file_path": "file.py", "line_number": 10, "message": "Test"}]
+        sample_review_state["suggestions"] = [
+            {"file_path": "file.py", "line_number": 10, "message": "Test"}
+        ]
         sample_review_state["should_stop"] = True
 
         result = has_suggestions(sample_review_state)
@@ -104,6 +125,7 @@ class TestWorkflowStateTransitions:
         sample_review_state["error"] = "Something went wrong"
 
         from langgraph.graph import END
+
         result = should_publish(sample_review_state)
 
         assert result == END
@@ -113,6 +135,7 @@ class TestWorkflowStateTransitions:
         sample_review_state["should_stop"] = True
 
         from langgraph.graph import END
+
         result = should_publish(sample_review_state)
 
         assert result == END
@@ -182,7 +205,7 @@ diff --git a/file.py b/file.py
                 "start_line": 1,
                 "end_line": 5,
                 "content": "password = 'secret'\neval(data)",
-                "language": "python"
+                "language": "python",
             }
         ]
         sample_review_state["current_chunk_index"] = 0
@@ -190,16 +213,18 @@ diff --git a/file.py b/file.py
         with patch("graph.nodes.AgentFactory") as mock_factory_class:
             mock_factory = Mock()
             mock_agent = Mock()
-            mock_agent.analyze = AsyncMock(return_value=[
-                {
-                    "file_path": "test.py",
-                    "line_number": 1,
-                    "message": "Hardcoded password",
-                    "severity": "error",
-                    "category": "security",
-                    "confidence": 0.9
-                }
-            ])
+            mock_agent.analyze = AsyncMock(
+                return_value=[
+                    {
+                        "file_path": "test.py",
+                        "line_number": 1,
+                        "message": "Hardcoded password",
+                        "severity": "error",
+                        "category": "security",
+                        "confidence": 0.9,
+                    }
+                ]
+            )
             mock_factory.create_agent = Mock(return_value=mock_agent)
             mock_factory_class.return_value = mock_factory
 
@@ -215,8 +240,20 @@ diff --git a/file.py b/file.py
         from graph.nodes import aggregate_results_node
 
         sample_review_state["suggestions"] = [
-            {"file_path": "file1.py", "line_number": 10, "message": "Issue 1", "severity": "error", "category": "security"},
-            {"file_path": "file2.py", "line_number": 20, "message": "Issue 2", "severity": "warning", "category": "style"}
+            {
+                "file_path": "file1.py",
+                "line_number": 10,
+                "message": "Issue 1",
+                "severity": "error",
+                "category": "security",
+            },
+            {
+                "file_path": "file2.py",
+                "line_number": 20,
+                "message": "Issue 2",
+                "severity": "warning",
+                "category": "style",
+            },
         ]
 
         result = await aggregate_results_node(sample_review_state)
@@ -230,9 +267,27 @@ diff --git a/file.py b/file.py
         from graph.nodes import severity_filter_node
 
         sample_review_state["suggestions"] = [
-            {"file_path": "file1.py", "line_number": 10, "message": "Error", "severity": "error", "category": "security"},
-            {"file_path": "file2.py", "line_number": 20, "message": "Warning", "severity": "warning", "category": "style"},
-            {"file_path": "file3.py", "line_number": 30, "message": "Note", "severity": "note", "category": "style"}
+            {
+                "file_path": "file1.py",
+                "line_number": 10,
+                "message": "Error",
+                "severity": "error",
+                "category": "security",
+            },
+            {
+                "file_path": "file2.py",
+                "line_number": 20,
+                "message": "Warning",
+                "severity": "warning",
+                "category": "style",
+            },
+            {
+                "file_path": "file3.py",
+                "line_number": 30,
+                "message": "Note",
+                "severity": "note",
+                "category": "style",
+            },
         ]
         sample_review_state["config"]["severity_threshold"] = "warning"
 
@@ -248,7 +303,13 @@ diff --git a/file.py b/file.py
         from graph.nodes import llm_judge_node
 
         sample_review_state["suggestions"] = [
-            {"file_path": "file.py", "line_number": 10, "message": "Test", "severity": "warning", "category": "style"}
+            {
+                "file_path": "file.py",
+                "line_number": 10,
+                "message": "Test",
+                "severity": "warning",
+                "category": "style",
+            }
         ]
 
         with patch("src.llm.judge.LLMJudge") as mock_judge_class:
@@ -273,7 +334,7 @@ diff --git a/file.py b/file.py
                 "message": "Test issue",
                 "severity": "warning",
                 "suggestion": "Fix this",
-                "category": "style"
+                "category": "style",
             }
         ]
 
@@ -354,15 +415,16 @@ class TestWorkflowStateManagement:
             action=PRAction.OPENED,
             branch="feature",
             target_branch="main",
-            commit_sha="abc123"
+            commit_sha="abc123",
         )
 
         from graph.state import ReviewConfig
+
         config = ReviewConfig(
             max_suggestions=50,
             severity_threshold="suggestion",
             enable_agents={"security": True, "style": True},
-            custom_rules={}
+            custom_rules={},
         )
 
         state = ReviewState(
@@ -385,10 +447,10 @@ class TestWorkflowStateManagement:
                 completed_at=None,
                 current_step="init",
                 agent_results={},
-                error_count=0
+                error_count=0,
             ),
             error=None,
-            should_stop=False
+            should_stop=False,
         )
 
         assert state["pr_event"].provider == "github"

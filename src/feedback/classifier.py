@@ -156,7 +156,7 @@ class EmojiClassifier:
         "🤨": -0.1,
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the classifier."""
         # Combine all emoji mappings
         self.emoji_scores = {}

@@ -164,7 +164,7 @@ class Deduplicator:
         severity_order = {"error": 0, "warning": 1, "suggestion": 2, "note": 3}
         category_priority = {"security": 0, "logic": 1, "pattern": 2, "style": 3}
 
-        def priority_key(s):
+        def priority_key(s: Suggestion) -> tuple[int, int, float]:
             return (
                 severity_order.get(s["severity"], 4),
                 category_priority.get(s["category"], 5),

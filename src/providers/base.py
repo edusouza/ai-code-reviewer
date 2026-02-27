@@ -11,7 +11,7 @@ class ProviderAdapter(ABC):
     and implement the abstract methods.
     """
 
-    def __init__(self, webhook_secret: str, api_token: str | None = None, **kwargs):
+    def __init__(self, webhook_secret: str, api_token: str | None = None, **kwargs: Any):
         self.webhook_secret = webhook_secret
         self.api_token = api_token
 

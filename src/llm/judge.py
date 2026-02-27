@@ -1,3 +1,5 @@
+from typing import cast
+
 from src.graph.state import Suggestion
 from src.llm.router import ModelRouter, ModelTier
 
@@ -5,7 +7,7 @@ from src.llm.router import ModelRouter, ModelTier
 class LLMJudge:
     """LLM-as-judge for validating suggestions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.router = ModelRouter()
 
     async def validate_suggestion(self, suggestion: Suggestion) -> bool:
@@ -39,7 +41,7 @@ Return JSON: {{"valid": true/false, "reason": "brief explanation"}}"""
         try:
             result = await self.router.route_json(prompt=prompt, tier=ModelTier.BALANCED)
 
-            return result.get("valid", True)
+            return cast(bool, result.get("valid", True))
 
         except Exception:
             # If validation fails, accept the suggestion
