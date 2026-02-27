@@ -2,7 +2,7 @@ import asyncio
 from typing import Any
 
 from google.api_core.exceptions import GoogleAPICallError, ResourceExhausted
-from google.cloud import aiplatform
+from google.cloud.aiplatform import init as aiplatform_init
 from vertexai.generative_models import GenerativeModel
 from vertexai.preview.language_models import TextGenerationModel
 
@@ -35,7 +35,7 @@ class VertexAIClient:
         self._models: dict[str, Any] = {}
 
         # Initialize Vertex AI
-        aiplatform.init(project=self.project_id, location=self.location)
+        aiplatform_init(project=self.project_id, location=self.location)
 
     def get_model(self, model_name: str = "gemini-pro") -> Any:
         """

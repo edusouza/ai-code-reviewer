@@ -34,9 +34,9 @@ class FeedbackProcessor:
             return
 
         try:
-            from google.cloud import firestore
+            from google.cloud.firestore import Client as FirestoreClient
 
-            self._db = firestore.Client(project=settings.project_id)
+            self._db = FirestoreClient(project=settings.project_id)
             self._initialized = True
             logger.info("Feedback processor Firestore client initialized")
         except Exception as e:

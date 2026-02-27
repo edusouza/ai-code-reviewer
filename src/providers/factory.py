@@ -51,6 +51,9 @@ class ProviderFactory:
 
         raise ValueError(f"Configuration not found for provider: {provider}")
 
+    # Alias for backward compatibility with tests
+    create_provider = create
+
     @classmethod
     def register(cls, name: str, adapter_class: type[ProviderAdapter]) -> None:
         """Register a new provider adapter.

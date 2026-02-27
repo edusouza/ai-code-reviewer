@@ -142,7 +142,7 @@ Format your response as a JSON array of findings."""
             )
 
         # Check for mutable default arguments
-        if re.search(r"def\s+\w+\s*\([^)]*=[]|{}|\(\)", line):
+        if re.search(r"def\s+\w+\s*\([^)]*=(\[\]|\{\}|\(\))", line):
             suggestions.append(
                 self.format_suggestion(
                     file_path=file_path,

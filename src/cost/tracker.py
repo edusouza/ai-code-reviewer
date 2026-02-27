@@ -72,9 +72,9 @@ class CostTracker:
             return
 
         try:
-            from google.cloud import firestore
+            from google.cloud.firestore import Client as FirestoreClient
 
-            self._db = firestore.Client(project=settings.project_id)
+            self._db = FirestoreClient(project=settings.project_id)
             self._initialized = True
         except Exception as e:
             logger.error(f"Failed to initialize Firestore: {e}")

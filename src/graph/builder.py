@@ -43,7 +43,7 @@ def should_publish(state: ReviewState) -> str:
     return "publish"
 
 
-def build_review_graph(checkpointer: BaseCheckpointSaver = None) -> StateGraph:
+def build_review_graph(checkpointer: BaseCheckpointSaver = None) -> Any:
     """Build and return the review workflow graph."""
 
     # Create the graph

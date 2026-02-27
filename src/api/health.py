@@ -49,9 +49,9 @@ async def ready_check() -> ReadyStatus:
 
     # Check Firestore connectivity
     try:
-        from google.cloud import firestore
+        from google.cloud.firestore import Client as FirestoreClient
 
-        db = firestore.Client()
+        db = FirestoreClient()
         # Try a simple operation
         db.collection("_health_check").document("test").get()
         services["firestore"] = "connected"
@@ -62,10 +62,10 @@ async def ready_check() -> ReadyStatus:
 
     # Check Pub/Sub connectivity
     try:
-        from google.cloud import pubsub_v1
+        from google.cloud.pubsub_v1 import PublisherClient
 
         # Just verify we can create a client
-        _ = pubsub_v1.PublisherClient()
+        _ = PublisherClient()
         services["pubsub"] = "connected"
     except Exception as e:
         logger.warning(f"Pub/Sub not ready: {e}")

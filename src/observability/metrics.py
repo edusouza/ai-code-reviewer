@@ -49,9 +49,9 @@ class CloudMetricsClient:
     def _initialize_client(self):
         """Initialize the Cloud Monitoring client."""
         try:
-            from google.cloud import monitoring_v3
+            from google.cloud.monitoring_v3 import MetricServiceClient
 
-            self._client = monitoring_v3.MetricServiceClient()
+            self._client = MetricServiceClient()
             self._project_name = f"projects/{self.project_id}"
             logger.info("Cloud Monitoring client initialized")
         except ImportError:
@@ -153,7 +153,7 @@ class CloudMetricsClient:
             return
 
         try:
-            from google.cloud import monitoring_v3
+            from google.cloud.monitoring_v3 import TimeSeries, Point as MonitoringPoint
 
             # Group metrics by name and type
             grouped_metrics: dict[str, list[MetricPoint]] = {}
@@ -169,7 +169,7 @@ class CloudMetricsClient:
                 metric_type, metric_name = key.split(":", 1)
 
                 # Build time series
-                series = monitoring_v3.TimeSeries()
+                series = TimeSeries()
                 series.metric.type = f"custom.googleapis.com/ai_reviewer/{metric_name}"
                 series.resource.type = "generic_task"
                 series.resource.labels["project_id"] = self.project_id
@@ -184,7 +184,7 @@ class CloudMetricsClient:
 
                 # Add data points
                 for point in points:
-                    ts_point = monitoring_v3.Point()
+                    ts_point = MonitoringPoint()
                     ts_point.interval.end_time.seconds = int(point.timestamp.timestamp())
                     ts_point.interval.end_time.nanos = int(
                         (point.timestamp.timestamp() % 1) * 10**9

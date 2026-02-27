@@ -45,9 +45,9 @@ class BigQueryETL:
     def _initialize_client(self):
         """Initialize the BigQuery client."""
         try:
-            from google.cloud import bigquery
+            from google.cloud.bigquery import Client as BigQueryClient
 
-            self._client = bigquery.Client(project=self.project_id)
+            self._client = BigQueryClient(project=self.project_id)
 
             # Ensure dataset exists
             dataset_ref = f"{self.project_id}.{self.dataset_id}"
@@ -148,9 +148,9 @@ class BigQueryETL:
     async def _collect_daily_data(self, date: datetime) -> list[dict[str, Any]]:
         """Collect daily metrics data from Firestore."""
         try:
-            from google.cloud import firestore
+            from google.cloud.firestore import Client as FirestoreClient
 
-            db = firestore.Client(project=self.project_id)
+            db = FirestoreClient(project=self.project_id)
 
             # Query metrics collection
             start = datetime(date.year, date.month, date.day)
@@ -177,9 +177,9 @@ class BigQueryETL:
     ) -> list[dict[str, Any]]:
         """Collect review data from Firestore."""
         try:
-            from google.cloud import firestore
+            from google.cloud.firestore import Client as FirestoreClient
 
-            db = firestore.Client(project=self.project_id)
+            db = FirestoreClient(project=self.project_id)
 
             reviews_ref = db.collection("reviews")
             query = reviews_ref.where("completed_at", ">=", start_date).where(
@@ -204,9 +204,9 @@ class BigQueryETL:
     ) -> list[dict[str, Any]]:
         """Collect feedback data from Firestore."""
         try:
-            from google.cloud import firestore
+            from google.cloud.firestore import Client as FirestoreClient
 
-            db = firestore.Client(project=self.project_id)
+            db = FirestoreClient(project=self.project_id)
 
             feedback_ref = db.collection("feedback")
             query = feedback_ref.where("timestamp", ">=", start_date).where(
@@ -345,61 +345,61 @@ class BigQueryETL:
             logger.error(f"Cannot create table {table_name}: BigQuery client not initialized")
             return
 
-        from google.cloud import bigquery
+        from google.cloud.bigquery import Table, SchemaField, TimePartitioning, TimePartitioningType
 
         table_id = f"{self._table_prefix}.{table_name}"
 
         # Define schemas for known tables
         schemas = {
             "daily_metrics": [
-                bigquery.SchemaField("date", "DATE", mode="REQUIRED"),
-                bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("metric_value", "FLOAT", mode="REQUIRED"),
-                bigquery.SchemaField("metric_type", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("labels", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
+                SchemaField("date", "DATE", mode="REQUIRED"),
+                SchemaField("metric_name", "STRING", mode="REQUIRED"),
+                SchemaField("metric_value", "FLOAT", mode="REQUIRED"),
+                SchemaField("metric_type", "STRING", mode="REQUIRED"),
+                SchemaField("labels", "STRING", mode="NULLABLE"),
+                SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
             ],
             "reviews": [
-                bigquery.SchemaField("review_id", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("provider", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("repo_owner", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("repo_name", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("pr_number", "INTEGER", mode="REQUIRED"),
-                bigquery.SchemaField("pr_title", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("suggestions_count", "INTEGER", mode="NULLABLE"),
-                bigquery.SchemaField("tokens_used", "INTEGER", mode="NULLABLE"),
-                bigquery.SchemaField("cost_usd", "FLOAT", mode="NULLABLE"),
-                bigquery.SchemaField("duration_seconds", "FLOAT", mode="NULLABLE"),
-                bigquery.SchemaField("status", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("started_at", "TIMESTAMP", mode="NULLABLE"),
-                bigquery.SchemaField("completed_at", "TIMESTAMP", mode="NULLABLE"),
-                bigquery.SchemaField("error_message", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
+                SchemaField("review_id", "STRING", mode="REQUIRED"),
+                SchemaField("provider", "STRING", mode="REQUIRED"),
+                SchemaField("repo_owner", "STRING", mode="REQUIRED"),
+                SchemaField("repo_name", "STRING", mode="REQUIRED"),
+                SchemaField("pr_number", "INTEGER", mode="REQUIRED"),
+                SchemaField("pr_title", "STRING", mode="NULLABLE"),
+                SchemaField("author", "STRING", mode="NULLABLE"),
+                SchemaField("suggestions_count", "INTEGER", mode="NULLABLE"),
+                SchemaField("tokens_used", "INTEGER", mode="NULLABLE"),
+                SchemaField("cost_usd", "FLOAT", mode="NULLABLE"),
+                SchemaField("duration_seconds", "FLOAT", mode="NULLABLE"),
+                SchemaField("status", "STRING", mode="REQUIRED"),
+                SchemaField("started_at", "TIMESTAMP", mode="NULLABLE"),
+                SchemaField("completed_at", "TIMESTAMP", mode="NULLABLE"),
+                SchemaField("error_message", "STRING", mode="NULLABLE"),
+                SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
             ],
             "feedback": [
-                bigquery.SchemaField("feedback_id", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("review_id", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("provider", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("repo_owner", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("repo_name", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("pr_number", "INTEGER", mode="REQUIRED"),
-                bigquery.SchemaField("feedback_type", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("score", "FLOAT", mode="REQUIRED"),
-                bigquery.SchemaField("emoji", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("comment", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("file_path", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("line_number", "INTEGER", mode="NULLABLE"),
-                bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
-                bigquery.SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
+                SchemaField("feedback_id", "STRING", mode="REQUIRED"),
+                SchemaField("review_id", "STRING", mode="REQUIRED"),
+                SchemaField("provider", "STRING", mode="REQUIRED"),
+                SchemaField("repo_owner", "STRING", mode="REQUIRED"),
+                SchemaField("repo_name", "STRING", mode="REQUIRED"),
+                SchemaField("pr_number", "INTEGER", mode="REQUIRED"),
+                SchemaField("feedback_type", "STRING", mode="REQUIRED"),
+                SchemaField("score", "FLOAT", mode="REQUIRED"),
+                SchemaField("emoji", "STRING", mode="NULLABLE"),
+                SchemaField("comment", "STRING", mode="NULLABLE"),
+                SchemaField("file_path", "STRING", mode="NULLABLE"),
+                SchemaField("line_number", "INTEGER", mode="NULLABLE"),
+                SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
+                SchemaField("inserted_at", "TIMESTAMP", mode="REQUIRED"),
             ],
         }
 
         schema = schemas.get(table_name, [])
         if schema:
-            table = bigquery.Table(table_id, schema=schema)
-            table.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY, field="inserted_at"
+            table = Table(table_id, schema=schema)
+            table.time_partitioning = TimePartitioning(
+                type_=TimePartitioningType.DAY, field="inserted_at"
             )
             self._client.create_table(table, exists_ok=True)
         else:

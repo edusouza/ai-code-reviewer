@@ -10,7 +10,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from google.cloud import pubsub_v1
+from google.cloud.pubsub_v1 import SubscriberClient, PublisherClient
+from google.cloud.pubsub_v1.subscriber.message import Message
 
 from config.settings import settings
 from models.events import PREvent
@@ -29,7 +30,7 @@ class ReviewJob:
     delivery_attempt: int = 1
 
     @classmethod
-    def from_message(cls, message: pubsub_v1.subscriber.message.Message) -> "ReviewJob":
+    def from_message(cls, message: Message) -> "ReviewJob":
         """Create ReviewJob from Pub/Sub message."""
         data = json.loads(message.data.decode("utf-8"))
 
@@ -88,8 +89,8 @@ class ReviewWorker:
     def initialize(self):
         """Initialize Pub/Sub clients."""
         try:
-            self.subscriber = pubsub_v1.SubscriberClient()
-            self.publisher = pubsub_v1.PublisherClient()
+            self.subscriber = SubscriberClient()
+            self.publisher = PublisherClient()
 
             self.subscription_path = self.subscriber.subscription_path(
                 self.project_id, self.subscription_id
@@ -132,7 +133,8 @@ class ReviewWorker:
         signal.signal(signal.SIGTERM, self._signal_handler)
 
         # Start streaming pull
-        flow_control = pubsub_v1.types.FlowControl(max_messages=self.max_workers * 2)
+        from google.cloud.pubsub_v1.types import FlowControl
+        flow_control = FlowControl(max_messages=self.max_workers * 2)
 
         self.streaming_pull_future = self.subscriber.subscribe(
             self.subscription_path,
@@ -161,7 +163,7 @@ class ReviewWorker:
 
         sys.exit(0)
 
-    def _message_callback(self, message: pubsub_v1.subscriber.message.Message):
+    def _message_callback(self, message: Message):
         """Callback for received messages."""
         # Create new event loop for this thread if needed
         try:
@@ -176,7 +178,7 @@ class ReviewWorker:
         # Schedule the async processing
         loop.create_task(self._process_message(message))
 
-    async def _process_message(self, message: pubsub_v1.subscriber.message.Message):
+    async def _process_message(self, message: Message):
         """Process a single message."""
         self._active_workers += 1
         try:
@@ -216,7 +218,7 @@ class ReviewWorker:
 
     async def _handle_failure(
         self,
-        message: pubsub_v1.subscriber.message.Message,
+        message: Message,
         job: ReviewJob | None,
         error: Exception,
     ):
@@ -242,7 +244,7 @@ class ReviewWorker:
             message.nack()
             self.jobs_failed += 1
 
-    async def _send_to_dlq(self, message: pubsub_v1.subscriber.message.Message, error: Exception):
+    async def _send_to_dlq(self, message: Message, error: Exception):
         """Send failed message to dead letter queue."""
         if not self.publisher:
             logger.error("Cannot send to DLQ: publisher not initialized")

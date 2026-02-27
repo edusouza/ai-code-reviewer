@@ -59,10 +59,10 @@ class VertexVectorStore:
             return
 
         try:
-            from google.cloud import aiplatform
+            from google.cloud.aiplatform import init as aiplatform_init
             from vertexai.language_models import TextEmbeddingModel
 
-            aiplatform.init(project=self.project_id, location=self.location)
+            aiplatform_init(project=self.project_id, location=self.location)
 
             # Initialize embedding model
             self._embedding_client = TextEmbeddingModel.from_pretrained(self.embedding_model)

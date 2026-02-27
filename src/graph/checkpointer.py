@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from google.cloud import firestore
+from google.cloud.firestore import Client as FirestoreClient
 from langgraph.checkpoint.base import BaseCheckpointSaver, Checkpoint
 
 from src.config.settings import settings
@@ -12,10 +12,10 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
 
     def __init__(self):
         super().__init__()
-        self.db = firestore.Client(project=settings.project_id)
+        self.db = FirestoreClient(project=settings.project_id)
         self.collection = self.db.collection("review_checkpoints")
 
-    def get(self, config: dict[str, Any]) -> Checkpoint | None:
+    def get(self, config: dict[str, Any]) -> Checkpoint | None:  # type: ignore[override]
         """Load checkpoint from Firestore."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
@@ -36,7 +36,7 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
             versions_seen=data["versions_seen"],
         )
 
-    def put(self, config: dict[str, Any], checkpoint: Checkpoint) -> dict[str, Any]:
+    def put(self, config: dict[str, Any], checkpoint: Checkpoint) -> dict[str, Any]:  # type: ignore[override]
         """Save checkpoint to Firestore."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
@@ -56,7 +56,7 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
 
         return {"configurable": {"thread_id": thread_id}}
 
-    def list(self, config: dict[str, Any]) -> list[Checkpoint]:
+    def list(self, config: dict[str, Any]) -> list[Checkpoint]:  # type: ignore[override]
         """List all checkpoints for a thread."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
