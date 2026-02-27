@@ -85,9 +85,11 @@ Format your response as a JSON array of findings."""
                 suggestions.extend(self._check_java_style(line, line_num, chunk["file_path"]))
 
         # Missing docstring check for Python
-        if language == "python" and self._is_function_or_class(
-            lines
-        ) and not self._has_docstring(lines):
+        if (
+            language == "python"
+            and self._is_function_or_class(lines)
+            and not self._has_docstring(lines)
+        ):
             suggestions.append(
                 self.format_suggestion(
                     file_path=chunk["file_path"],
@@ -159,9 +161,11 @@ Format your response as a JSON array of findings."""
         suggestions = []
 
         # Check for == instead of ===
-        if re.search(r"(?<!\!)=(?<!\=)=(?!=)", line) and not re.search(
-            r"===", line
-        ) and re.search(r"if\s*\(|while\s*\(|return\s+|===?\s+", line):
+        if (
+            re.search(r"(?<!\!)=(?<!\=)=(?!=)", line)
+            and not re.search(r"===", line)
+            and re.search(r"if\s*\(|while\s*\(|return\s+|===?\s+", line)
+        ):
             suggestions.append(
                 self.format_suggestion(
                     file_path=file_path,

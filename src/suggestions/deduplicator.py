@@ -1,4 +1,3 @@
-
 from src.graph.state import Suggestion
 
 

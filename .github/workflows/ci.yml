@@ -44,7 +44,9 @@ jobs:
           pip install -r src/requirements.txt
           
       - name: Run MyPy type checker
-        run: mypy src/ --ignore-missing-imports --no-error-summary
+        run: |
+          cd src
+          mypy . --ignore-missing-imports --explicit-package-bases --no-error-summary
 
   test:
     runs-on: ubuntu-latest

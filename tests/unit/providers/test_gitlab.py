@@ -350,7 +350,7 @@ class TestGitLabAdapterEdgeCases:
         assert event.repo_name == ""
         assert event.repo_owner == ""
     
-    def test_fetch_pr_url_encoding(self, sample_pr_event):
+    async def test_fetch_pr_url_encoding(self, sample_pr_event):
         """Test URL encoding for project path."""
         adapter = GitLabAdapter(webhook_secret="secret", token="token")
         

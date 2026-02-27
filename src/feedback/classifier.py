@@ -286,9 +286,7 @@ class EmojiClassifier:
             return True
 
         # Mixed feedback with significant negative component
-        return bool(
-            result.feedback_type == FeedbackType.MIXED and result.score < -0.2
-        )
+        return bool(result.feedback_type == FeedbackType.MIXED and result.score < -0.2)
 
     def extract_keywords(self, text: str) -> list[str]:
         """

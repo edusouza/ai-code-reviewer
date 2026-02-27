@@ -385,8 +385,8 @@ def _extract_metadata(func: Callable, args: tuple, kwargs: dict) -> dict[str, An
     if args and hasattr(args[0], "provider"):
         obj = args[0]
         metadata["provider"] = getattr(obj, "provider", None)
-        repo_owner = getattr(obj, 'repo_owner', '') or ''
-        repo_name = getattr(obj, 'repo_name', '') or ''
+        repo_owner = getattr(obj, "repo_owner", "") or ""
+        repo_name = getattr(obj, "repo_name", "") or ""
         metadata["repo"] = f"{repo_owner}/{repo_name}"
         metadata["pr_number"] = getattr(obj, "pr_number", None)
 
@@ -438,7 +438,11 @@ def _extract_generation_params(kwargs: dict) -> dict[str, Any]:
 
 def _extract_token_usage(result: Any) -> dict[str, int | None]:
     """Extract token usage information from result."""
-    usage: dict[str, int | None] = {"completion_tokens": None, "prompt_tokens": None, "total_tokens": None}
+    usage: dict[str, int | None] = {
+        "completion_tokens": None,
+        "prompt_tokens": None,
+        "total_tokens": None,
+    }
 
     if hasattr(result, "usage"):
         usage_obj = result.usage

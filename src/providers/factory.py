@@ -1,4 +1,3 @@
-
 from config import settings
 from providers.base import ProviderAdapter
 from providers.bitbucket import BitbucketAdapter

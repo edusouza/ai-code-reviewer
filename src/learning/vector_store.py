@@ -155,7 +155,9 @@ class VertexVectorStore:
 
             # Create JSONL format for Vertex AI
             datapoints = []
-            for _i, (doc_id, embedding, metadata) in enumerate(zip(ids, embeddings, metadatas, strict=False)):
+            for _i, (doc_id, embedding, metadata) in enumerate(
+                zip(ids, embeddings, metadatas, strict=False)
+            ):
                 datapoint = {
                     "id": doc_id,
                     "embedding": embedding,

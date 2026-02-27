@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 class FeedbackProcessor:
     """Process and store feedback from users."""
 
-    def __init__(
-        self, firestore_db: Any | None = None, classifier: EmojiClassifier | None = None
-    ):
+    def __init__(self, firestore_db: Any | None = None, classifier: EmojiClassifier | None = None):
         """
         Initialize the feedback processor.
 
