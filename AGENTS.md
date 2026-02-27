@@ -72,3 +72,14 @@ Use async/await instead of raw promises.
 - If a linter error occurs, fix the underlying code issue, not the linter warning
 - If tests fail due to missing coverage, write tests for the uncovered code
 - If dependencies are incompatible, update them properly rather than downgrading
+
+### Pre-commit Quality Checks
+**MANDATORY**: You MUST run linters BEFORE every commit. EVERY time you modify code, run these commands:
+```bash
+ruff check src/ tests/
+mypy src/ --strict
+```
+- **NO EXCEPTIONS**: Even for a single line change
+- Fix ALL errors before committing
+- If any tool fails, fix the underlying issue - don't ignore or workaround
+- Treat linter/type errors as blockers, not suggestions
