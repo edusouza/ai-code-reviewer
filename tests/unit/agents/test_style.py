@@ -216,7 +216,7 @@ class TestStyleAgent:
             "language": "java"
         }
 
-        suggestions = await agent.analyze(chunk, {})
+        _ = await agent.analyze(chunk, {})
 
         # Should not flag K&R style
         assert True  # Just ensure it doesn't crash

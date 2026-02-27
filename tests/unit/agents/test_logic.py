@@ -105,7 +105,8 @@ class TestLogicAgent:
 
         suggestions = await agent.analyze(chunk, {})
 
-        division = [s for s in suggestions if "division" in s["message"].lower() or "zero" in s["message"].lower()]
+        # Check for division by zero patterns
+        _ = [s for s in suggestions if "division" in s["message"].lower() or "zero" in s["message"].lower()]
         # This pattern might not always match, so we just check it doesn't crash
         assert isinstance(suggestions, list)
 

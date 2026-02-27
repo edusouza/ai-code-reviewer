@@ -1,14 +1,10 @@
 """Test fixtures and configuration."""
 
-# Add src to path
-import sys
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
 @pytest.fixture
@@ -333,7 +329,7 @@ index 1234567..abcdefg 100644
 +    password = 'secret123'
 +    eval(data)
      return data
- 
+
 +def query_db(user_input):
 +    cursor.execute("SELECT * FROM users WHERE id = " + user_input)
 +
@@ -343,7 +339,7 @@ index 1234567..abcdefg 100644
 @@ -10,5 +15,8 @@ class User:
      def get_name(self):
          return self.name
- 
+
 +    def insecure_method(self):
 +        os.system("rm -rf /")
 +
@@ -361,7 +357,7 @@ index 9876543..fedcba9 100644
 +    }
      return data.toString();
  }
- 
+
 +const password = "hardcoded_secret";
 +
  module.exports = { process };

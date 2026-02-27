@@ -403,7 +403,7 @@ class TestWorkflowStateManagement:
         original_suggestions = sample_review_state["suggestions"].copy()
 
         # Simulate a node returning updates
-        updates = {"suggestions": [{"file_path": "test.py", "line_number": 1, "message": "Test"}]}
+        _ = {"suggestions": [{"file_path": "test.py", "line_number": 1, "message": "Test"}]}
 
         # Original should be unchanged
         assert sample_review_state["suggestions"] == original_suggestions

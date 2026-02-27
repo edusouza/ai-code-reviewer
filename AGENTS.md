@@ -77,7 +77,7 @@ Use async/await instead of raw promises.
 **MANDATORY**: You MUST run linters BEFORE every commit. EVERY time you modify code, run these commands:
 ```bash
 ruff check src/ tests/
-mypy src/ --strict
+cd src && mypy . --strict
 ```
 - **NO EXCEPTIONS**: Even for a single line change
 - Fix ALL errors before committing
@@ -118,3 +118,13 @@ chmod +x .git/hooks/pre-commit
 - Provides helpful hints (e.g., suggests `--fix` for ruff errors)
 
 **Note:** The hook is already installed in this repository.
+
+### Boy Scout Rule (Regra do Escoteiro)
+**ALWAYS leave the code cleaner than you found it.**
+- If you find an error, FIX IT - no excuses like "it was already there"
+- If you see messy code, CLEAN IT
+- If you encounter a warning, ADDRESS IT
+- Every file you touch should be better after your changes
+- Think of it as: you're not just writing code, you're improving the codebase
+- **NO EXCEPTIONS**: Even if the error wasn't caused by you, fix it anyway
+- This applies to: lint errors, type errors, typos, dead code, poor formatting, missing docs

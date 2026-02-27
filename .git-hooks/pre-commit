@@ -27,7 +27,8 @@ fi
 
 echo ""
 echo "${YELLOW}2/2 Running MyPy type checker...${NC}"
-if python -m mypy src/ --strict; then
+# Run mypy from src/ directory to avoid duplicate module errors
+if (cd src && env -u PYTHONPATH python -m mypy . --strict); then
     echo "${GREEN}✓ MyPy checks passed${NC}"
 else
     echo "${RED}✗ MyPy checks failed${NC}"

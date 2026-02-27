@@ -33,16 +33,18 @@ class TestSuggestionProcessor:
         """Test full processing pipeline."""
         processor = SuggestionProcessor(max_suggestions=10)
 
-        with patch.object(processor.deduplicator, 'deduplicate', return_value=sample_suggestions):
-            with patch.object(processor.severity_classifier, 'filter_by_threshold', return_value=sample_suggestions):
-                with patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True)):
-                    result = await processor.process(
-                        sample_suggestions,
-                        enable_deduplication=True,
-                        enable_severity_filter=True,
-                        enable_validation=True,
-                        enable_ranking=False
-                    )
+        with (
+            patch.object(processor.deduplicator, 'deduplicate', return_value=sample_suggestions),
+            patch.object(processor.severity_classifier, 'filter_by_threshold', return_value=sample_suggestions),
+            patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True))
+        ):
+            result = await processor.process(
+                sample_suggestions,
+                enable_deduplication=True,
+                enable_severity_filter=True,
+                enable_validation=True,
+                enable_ranking=False
+            )
 
         assert "suggestions" in result
         assert "metadata" in result
@@ -184,9 +186,11 @@ class TestSuggestionProcessor:
         """Test strict processing method."""
         processor = SuggestionProcessor()
 
-        with patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True)):
-            with patch.object(processor.judge, 'rank_suggestions', AsyncMock(return_value=sample_suggestions)):
-                suggestions = await processor.strict_process(sample_suggestions)
+        with (
+            patch.object(processor.judge, 'validate_suggestion', AsyncMock(return_value=True)),
+            patch.object(processor.judge, 'rank_suggestions', AsyncMock(return_value=sample_suggestions))
+        ):
+            suggestions = await processor.strict_process(sample_suggestions)
 
         assert isinstance(suggestions, list)
 

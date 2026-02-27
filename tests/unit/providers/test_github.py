@@ -216,7 +216,7 @@ class TestGitHubAdapter:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client), pytest.raises(Exception):
+        with patch("httpx.AsyncClient", return_value=mock_client), pytest.raises(Exception):  # noqa: B017
             await adapter.fetch_pr(sample_pr_event)
 
     @pytest.mark.asyncio

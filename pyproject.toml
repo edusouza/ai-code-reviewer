@@ -14,6 +14,8 @@ warn_unreachable = false
 strict_equality = false
 show_error_codes = true
 ignore_missing_imports = true
+explicit_package_bases = true
+mypy_path = "src"
 
 [[tool.mypy.overrides]]
 module = [
@@ -25,6 +27,24 @@ module = [
     "tiktoken.*",
 ]
 ignore_missing_imports = true
+
+# Ignore duplicate module errors due to PYTHONPATH configuration
+[[tool.mypy.overrides]]
+module = [
+    "agents.*",
+    "api.*",
+    "config.*",
+    "cost.*",
+    "feedback.*",
+    "graph.*",
+    "llm.*",
+    "models.*",
+    "observability.*",
+    "providers.*",
+    "suggestions.*",
+    "workers.*",
+]
+follow_imports = "skip"
 
 [tool.ruff]
 target-version = "py311"

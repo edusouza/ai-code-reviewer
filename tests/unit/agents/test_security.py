@@ -263,7 +263,7 @@ class TestSecurityAgent:
             "language": "python"
         }
 
-        suggestions = await agent.analyze(chunk, {})
+        _ = await agent.analyze(chunk, {})
 
         # Should include LLM suggestions
         mock_llm.generate.assert_called_once()
