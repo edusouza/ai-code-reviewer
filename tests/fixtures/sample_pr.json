@@ -1,0 +1,67 @@
+{
+  "action": "opened",
+  "number": 42,
+  "pull_request": {
+    "id": 1234567890,
+    "node_id": "PR_node123",
+    "number": 42,
+    "title": "Add new authentication feature",
+    "body": "This PR implements OAuth2 authentication flow.\n\n## Changes\n- Add OAuth2 provider\n- Update login page\n- Add token refresh logic\n\n## Testing\n- [ ] Unit tests added\n- [ ] Integration tests pass",
+    "state": "open",
+    "locked": false,
+    "merged": false,
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "head": {
+      "label": "myorg:feature/oauth2",
+      "ref": "feature/oauth2",
+      "sha": "abc123def456789abc123def456789abc123def4",
+      "repo": {
+        "id": 123456,
+        "name": "myrepo",
+        "full_name": "myorg/myrepo",
+        "private": false,
+        "owner": {
+          "login": "myorg",
+          "id": 12345
+        }
+      }
+    },
+    "base": {
+      "label": "myorg:main",
+      "ref": "main",
+      "sha": "def789abc012def789abc012def789abc012def7",
+      "repo": {
+        "id": 123456,
+        "name": "myrepo",
+        "full_name": "myorg/myrepo"
+      }
+    },
+    "user": {
+      "login": "johndoe",
+      "id": 1234567,
+      "avatar_url": "https://avatars.githubusercontent.com/u/1234567?v=4"
+    },
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "html_url": "https://github.com/myorg/myrepo/pull/42"
+  },
+  "repository": {
+    "id": 123456,
+    "name": "myrepo",
+    "full_name": "myorg/myrepo",
+    "private": false,
+    "owner": {
+      "login": "myorg",
+      "id": 12345,
+      "type": "Organization"
+    },
+    "html_url": "https://github.com/myorg/myrepo",
+    "description": "Sample repository for testing",
+    "default_branch": "main"
+  },
+  "sender": {
+    "login": "johndoe",
+    "id": 1234567
+  }
+}

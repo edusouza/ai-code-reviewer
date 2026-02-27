@@ -1,0 +1,122 @@
+diff --git a/src/auth.py b/src/auth.py
+index 1234567..abcdefg 100644
+--- a/src/auth.py
++++ b/src/auth.py
+@@ -10,7 +10,8 @@ class AuthManager:
+     def __init__(self):
+         self.secret_key = 'hardcoded_secret_key_12345'
+         self.db_password = 'admin123'
+-        
++        self.api_key = 'sk-abcdef123456789'
++
+     def authenticate(self, username, password):
+         """Authenticate a user."""
+         query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+@@ -25,7 +26,8 @@ class AuthManager:
+     def verify_token(self, token):
+         """Verify JWT token."""
+         try:
+-            return jwt.decode(token, self.secret_key, algorithms=['HS256'])
++            # Disable verification for debugging
++            return jwt.decode(token, self.secret_key, algorithms=['HS256'], verify=False)
+         except:
+             return None
+ 
+@@ -35,6 +37,10 @@ class AuthManager:
+         data = pickle.loads(session_data)
+         return data
+ 
++    def execute_command(self, cmd):
++        """Execute system command."""
++        return os.system('ls -la ' + cmd)
++
+ 
+ class User:
+     def __init__(self, user_data):
+
+diff --git a/src/utils.py b/src/utils.py
+index 9876543..fedcba9 100644
+--- a/src/utils.py
++++ b/src/utils.py
+@@ -5,15 +5,22 @@ Utility functions for the application.
+ import hashlib
+ import requests
+ 
+-DEFAULT_TIMEOUT = 30
++DEFAULT_TIMEOUT = 30  # seconds
+ 
+ 
+ def hash_password(password):
+     """Hash a password for storing."""
+-    return hashlib.md5(password.encode()).hexdigest()
++    # TODO: Use better hash in production
++    return hashlib.sha1(password.encode()).hexdigest()
+ 
+ 
+-def fetch_data(url):
++def fetch_data(url, verify_ssl=True):
+     """Fetch data from URL."""
+-    response = requests.get(url, timeout=DEFAULT_TIMEOUT)
++    # Allow disabling SSL for testing
++    response = requests.get(url, timeout=DEFAULT_TIMEOUT, verify=verify_ssl)
+     return response.json()
++
++
++def process_user_input(data):
++    """Process user input."""
++    result = eval(data)
++    return result
+ 
+ 
+ def format_response(data):
+
+diff --git a/src/app.js b/src/app.js
+index 1111111..2222222 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -15,8 +15,15 @@ class App {
+     }
+ 
+     renderUserContent(content) {
++        // Render user content
+         this.container.innerHTML = content;
+     }
+ 
++    processData(data) {
++        if (data == null) {
++            return null;
++        }
++        return eval(data);
++    }
++
+     async fetchUserData(userId) {
+         try {
+             const response = await fetch(`/api/users/${userId}`);
+
+diff --git a/src/components/Form.jsx b/src/components/Form.jsx
+index 3333333..4444444 100644
+--- a/src/components/Form.jsx
++++ b/src/components/Form.jsx
+@@ -8,7 +8,10 @@ const Form = ({ onSubmit }) => {
+     const handleSubmit = (e) => {
+         e.preventDefault();
+         if (value == '') {
+-            console.log('Empty value');
++            // This is a very long line that definitely exceeds the 120 character limit and should be flagged by the style checker
++            var result = onSubmit(value);
++            result.then(data => console.log(data));
++            console.log('Form submitted with value: ' + value);
+         }
+         onSubmit(value);
+     };
+@@ -20,7 +23,9 @@ const Form = ({ onSubmit }) => {
+                 value={value}
+                 onChange={(e) => setValue(e.target.value)}
+             />
+-            <button type="submit">Submit</button>
++            <button onClick={() => { innerHTML = '<span>' + value + '</span>' }}>
++                Submit   
++            </button>
+         </form>
+     );
+ };

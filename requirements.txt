@@ -1,0 +1,28 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+httpx==0.26.0
+PyJWT==2.8.0
+cryptography==42.0.0
+google-cloud-firestore==2.14.0
+google-cloud-pubsub==2.19.0
+google-cloud-aiplatform==1.40.0
+
+# LangGraph orchestration
+langgraph==0.0.40
+langchain==0.1.0
+langchain-google-vertexai==0.0.5
+
+# Token counting
+tiktoken==0.5.2
+
+# Testing
+pytest==7.4.0
+pytest-asyncio==0.23.0
+pytest-cov==4.1.0
+
+# Linting and formatting
+ruff==0.1.9
+mypy==1.8.0

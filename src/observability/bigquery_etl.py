@@ -1,0 +1,412 @@
+"""BigQuery ETL for analytics and reporting."""
+import logging
+from typing import Dict, Any, List, Optional
+from datetime import datetime, timedelta
+import json
+import asyncio
+
+from config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+
+class BigQueryETL:
+    """ETL pipeline for exporting observability data to BigQuery."""
+    
+    def __init__(
+        self,
+        project_id: Optional[str] = None,
+        dataset_id: str = "ai_reviewer_analytics",
+        enabled: bool = True
+    ):
+        """
+        Initialize BigQuery ETL.
+        
+        Args:
+            project_id: GCP project ID
+            dataset_id: BigQuery dataset ID
+            enabled: Whether ETL is enabled
+        """
+        self.project_id = project_id or settings.project_id
+        self.dataset_id = dataset_id
+        self.enabled = enabled and bool(self.project_id)
+        
+        self._client = None
+        self._table_prefix = f"{self.project_id}.{self.dataset_id}"
+        
+        if self.enabled:
+            try:
+                self._initialize_client()
+            except Exception as e:
+                logger.error(f"Failed to initialize BigQuery: {e}")
+                self.enabled = False
+    
+    def _initialize_client(self):
+        """Initialize the BigQuery client."""
+        try:
+            from google.cloud import bigquery
+            
+            self._client = bigquery.Client(project=self.project_id)
+            
+            # Ensure dataset exists
+            dataset_ref = f"{self.project_id}.{self.dataset_id}"
+            try:
+                self._client.get_dataset(dataset_ref)
+            except Exception:
+                logger.info(f"Creating BigQuery dataset: {self.dataset_id}")
+                dataset = bigquery.Dataset(dataset_ref)
+                dataset.location = "US"
+                self._client.create_dataset(dataset, exists_ok=True)
+            
+            logger.info("BigQuery ETL initialized")
+        except ImportError:
+            logger.warning("google-cloud-bigquery not installed, ETL disabled")
+            self.enabled = False
+    
+    async def export_daily_metrics(self, date: Optional[datetime] = None):
+        """
+        Export daily metrics to BigQuery.
+        
+        Args:
+            date: Date to export (defaults to yesterday)
+        """
+        if not self.enabled:
+            return
+        
+        if date is None:
+            date = datetime.utcnow() - timedelta(days=1)
+        
+        try:
+            # Get data from Firestore or other sources
+            daily_data = await self._collect_daily_data(date)
+            
+            # Transform data
+            transformed_data = self._transform_metrics(daily_data)
+            
+            # Load to BigQuery
+            await self._load_to_bigquery(
+                table_name="daily_metrics",
+                data=transformed_data
+            )
+            
+            logger.info(f"Exported metrics for {date.date()}")
+            
+        except Exception as e:
+            logger.error(f"Failed to export daily metrics: {e}")
+            raise
+    
+    async def export_review_analytics(self, start_date: datetime, end_date: datetime):
+        """
+        Export review analytics for a date range.
+        
+        Args:
+            start_date: Start date
+            end_date: End date
+        """
+        if not self.enabled:
+            return
+        
+        try:
+            # Collect review data
+            review_data = await self._collect_review_data(start_date, end_date)
+            
+            # Transform
+            transformed = self._transform_reviews(review_data)
+            
+            # Load
+            await self._load_to_bigquery(
+                table_name="reviews",
+                data=transformed
+            )
+            
+            logger.info(f"Exported {len(transformed)} reviews from {start_date.date()} to {end_date.date()}")
+            
+        except Exception as e:
+            logger.error(f"Failed to export review analytics: {e}")
+            raise
+    
+    async def export_feedback_analytics(self, start_date: datetime, end_date: datetime):
+        """
+        Export feedback analytics.
+        
+        Args:
+            start_date: Start date
+            end_date: End date
+        """
+        if not self.enabled:
+            return
+        
+        try:
+            feedback_data = await self._collect_feedback_data(start_date, end_date)
+            transformed = self._transform_feedback(feedback_data)
+            
+            await self._load_to_bigquery(
+                table_name="feedback",
+                data=transformed
+            )
+            
+            logger.info(f"Exported {len(transformed)} feedback items")
+            
+        except Exception as e:
+            logger.error(f"Failed to export feedback analytics: {e}")
+            raise
+    
+    async def _collect_daily_data(self, date: datetime) -> List[Dict[str, Any]]:
+        """Collect daily metrics data from Firestore."""
+        try:
+            from google.cloud import firestore
+            
+            db = firestore.Client(project=self.project_id)
+            
+            # Query metrics collection
+            start = datetime(date.year, date.month, date.day)
+            end = start + timedelta(days=1)
+            
+            metrics_ref = db.collection('metrics')
+            query = metrics_ref.where('timestamp', '>=', start).where('timestamp', '<', end)
+            
+            docs = query.stream()
+            data = []
+            for doc in docs:
+                doc_data = doc.to_dict()
+                doc_data['id'] = doc.id
+                data.append(doc_data)
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Failed to collect daily data: {e}")
+            return []
+    
+    async def _collect_review_data(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+        """Collect review data from Firestore."""
+        try:
+            from google.cloud import firestore
+            
+            db = firestore.Client(project=self.project_id)
+            
+            reviews_ref = db.collection('reviews')
+            query = reviews_ref.where('completed_at', '>=', start_date).where('completed_at', '<=', end_date)
+            
+            docs = query.stream()
+            data = []
+            for doc in docs:
+                doc_data = doc.to_dict()
+                doc_data['id'] = doc.id
+                data.append(doc_data)
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Failed to collect review data: {e}")
+            return []
+    
+    async def _collect_feedback_data(self, start_date: datetime, end_date: datetime) -> List[Dict[str, Any]]:
+        """Collect feedback data from Firestore."""
+        try:
+            from google.cloud import firestore
+            
+            db = firestore.Client(project=self.project_id)
+            
+            feedback_ref = db.collection('feedback')
+            query = feedback_ref.where('timestamp', '>=', start_date).where('timestamp', '<=', end_date)
+            
+            docs = query.stream()
+            data = []
+            for doc in docs:
+                doc_data = doc.to_dict()
+                doc_data['id'] = doc.id
+                data.append(doc_data)
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Failed to collect feedback data: {e}")
+            return []
+    
+    def _transform_metrics(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Transform raw metrics data for BigQuery."""
+        transformed = []
+        
+        for item in data:
+            transformed.append({
+                'date': item.get('timestamp', datetime.utcnow()).strftime('%Y-%m-%d'),
+                'metric_name': item.get('name', 'unknown'),
+                'metric_value': float(item.get('value', 0)),
+                'metric_type': item.get('type', 'gauge'),
+                'labels': json.dumps(item.get('labels', {})),
+                'inserted_at': datetime.utcnow().isoformat()
+            })
+        
+        return transformed
+    
+    def _transform_reviews(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Transform review data for BigQuery."""
+        transformed = []
+        
+        for item in data:
+            pr_event = item.get('pr_event', {})
+            
+            transformed.append({
+                'review_id': item.get('id', ''),
+                'provider': pr_event.get('provider', 'unknown'),
+                'repo_owner': pr_event.get('repo_owner', ''),
+                'repo_name': pr_event.get('repo_name', ''),
+                'pr_number': pr_event.get('pr_number', 0),
+                'pr_title': pr_event.get('pr_title', ''),
+                'author': pr_event.get('author', ''),
+                'suggestions_count': item.get('suggestions_count', 0),
+                'tokens_used': item.get('tokens_used', 0),
+                'cost_usd': item.get('cost_usd', 0.0),
+                'duration_seconds': item.get('duration_seconds', 0.0),
+                'status': item.get('status', 'unknown'),
+                'started_at': item.get('started_at', '').isoformat() if isinstance(item.get('started_at'), datetime) else item.get('started_at'),
+                'completed_at': item.get('completed_at', '').isoformat() if isinstance(item.get('completed_at'), datetime) else item.get('completed_at'),
+                'error_message': item.get('error_message', ''),
+                'inserted_at': datetime.utcnow().isoformat()
+            })
+        
+        return transformed
+    
+    def _transform_feedback(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Transform feedback data for BigQuery."""
+        transformed = []
+        
+        for item in data:
+            transformed.append({
+                'feedback_id': item.get('id', ''),
+                'review_id': item.get('review_id', ''),
+                'provider': item.get('provider', 'unknown'),
+                'repo_owner': item.get('repo_owner', ''),
+                'repo_name': item.get('repo_name', ''),
+                'pr_number': item.get('pr_number', 0),
+                'feedback_type': item.get('feedback_type', 'unknown'),
+                'score': float(item.get('score', 0)),
+                'emoji': item.get('emoji', ''),
+                'comment': item.get('comment', ''),
+                'file_path': item.get('file_path', ''),
+                'line_number': item.get('line_number', 0),
+                'timestamp': item.get('timestamp', '').isoformat() if isinstance(item.get('timestamp'), datetime) else item.get('timestamp'),
+                'inserted_at': datetime.utcnow().isoformat()
+            })
+        
+        return transformed
+    
+    async def _load_to_bigquery(self, table_name: str, data: List[Dict[str, Any]]):
+        """Load data to BigQuery table."""
+        if not data:
+            logger.debug(f"No data to load to {table_name}")
+            return
+        
+        try:
+            table_id = f"{self._table_prefix}.{table_name}"
+            
+            # Check if table exists, create if not
+            try:
+                self._client.get_table(table_id)
+            except Exception:
+                logger.info(f"Creating BigQuery table: {table_name}")
+                self._create_table(table_name)
+            
+            # Insert data
+            errors = self._client.insert_rows_json(table_id, data)
+            
+            if errors:
+                logger.error(f"Errors loading to {table_name}: {errors}")
+                raise Exception(f"Failed to load {len(errors)} rows")
+            
+            logger.debug(f"Loaded {len(data)} rows to {table_name}")
+            
+        except Exception as e:
+            logger.error(f"Failed to load to BigQuery: {e}")
+            raise
+    
+    def _create_table(self, table_name: str):
+        """Create a BigQuery table if it doesn't exist."""
+        from google.cloud import bigquery
+        
+        table_id = f"{self._table_prefix}.{table_name}"
+        
+        # Define schemas for known tables
+        schemas = {
+            'daily_metrics': [
+                bigquery.SchemaField('date', 'DATE', mode='REQUIRED'),
+                bigquery.SchemaField('metric_name', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('metric_value', 'FLOAT', mode='REQUIRED'),
+                bigquery.SchemaField('metric_type', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('labels', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('inserted_at', 'TIMESTAMP', mode='REQUIRED'),
+            ],
+            'reviews': [
+                bigquery.SchemaField('review_id', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('provider', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('repo_owner', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('repo_name', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('pr_number', 'INTEGER', mode='REQUIRED'),
+                bigquery.SchemaField('pr_title', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('author', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('suggestions_count', 'INTEGER', mode='NULLABLE'),
+                bigquery.SchemaField('tokens_used', 'INTEGER', mode='NULLABLE'),
+                bigquery.SchemaField('cost_usd', 'FLOAT', mode='NULLABLE'),
+                bigquery.SchemaField('duration_seconds', 'FLOAT', mode='NULLABLE'),
+                bigquery.SchemaField('status', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('started_at', 'TIMESTAMP', mode='NULLABLE'),
+                bigquery.SchemaField('completed_at', 'TIMESTAMP', mode='NULLABLE'),
+                bigquery.SchemaField('error_message', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('inserted_at', 'TIMESTAMP', mode='REQUIRED'),
+            ],
+            'feedback': [
+                bigquery.SchemaField('feedback_id', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('review_id', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('provider', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('repo_owner', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('repo_name', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('pr_number', 'INTEGER', mode='REQUIRED'),
+                bigquery.SchemaField('feedback_type', 'STRING', mode='REQUIRED'),
+                bigquery.SchemaField('score', 'FLOAT', mode='REQUIRED'),
+                bigquery.SchemaField('emoji', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('comment', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('file_path', 'STRING', mode='NULLABLE'),
+                bigquery.SchemaField('line_number', 'INTEGER', mode='NULLABLE'),
+                bigquery.SchemaField('timestamp', 'TIMESTAMP', mode='REQUIRED'),
+                bigquery.SchemaField('inserted_at', 'TIMESTAMP', mode='REQUIRED'),
+            ]
+        }
+        
+        schema = schemas.get(table_name, [])
+        if schema:
+            table = bigquery.Table(table_id, schema=schema)
+            table.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field='inserted_at'
+            )
+            self._client.create_table(table, exists_ok=True)
+        else:
+            # Create generic table
+            table = bigquery.Table(table_id)
+            self._client.create_table(table, exists_ok=True)
+
+
+# Cloud Function entry point for scheduled ETL
+def run_daily_etl(event, context):
+    """
+    Cloud Function entry point for daily ETL job.
+    
+    Triggered by Cloud Scheduler.
+    """
+    logger.info(f"Starting daily ETL job: {context.timestamp}")
+    
+    etl = BigQueryETL()
+    
+    # Run all exports
+    asyncio.run(etl.export_daily_metrics())
+    
+    # Export last 7 days of reviews
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=7)
+    asyncio.run(etl.export_review_analytics(start_date, end_date))
+    asyncio.run(etl.export_feedback_analytics(start_date, end_date))
+    
+    logger.info("Daily ETL job completed")
+    
+    return {"status": "success", "message": "ETL completed"}
