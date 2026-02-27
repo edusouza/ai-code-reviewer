@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any, cast
+from typing import Any
 
 from src.llm.client import VertexAIClient
 
@@ -16,7 +16,7 @@ class ModelRouter:
     """Routes requests to appropriate model based on requirements."""
 
     # Model configuration
-    MODELS = {
+    MODELS: dict[ModelTier, dict[str, Any]] = {
         ModelTier.FAST: {
             "model_name": "gemini-1.5-flash",
             "max_tokens": 2048,
@@ -59,10 +59,10 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return cast(
-            str,
-            await self.client.generate(prompt=prompt, system_prompt=system_prompt, **model_config),
+        result = await self.client.generate(
+            prompt=prompt, system_prompt=system_prompt, **model_config
         )
+        return result  # type: ignore[no-any-return]
 
     async def route_json(
         self,
@@ -86,12 +86,10 @@ class ModelRouter:
         model_config = self.MODELS[tier].copy()
         model_config.update(kwargs)
 
-        return cast(
-            dict[str, Any],
-            await self.client.generate_json(
-                prompt=prompt, system_prompt=system_prompt, **model_config
-            ),
+        result = await self.client.generate_json(
+            prompt=prompt, system_prompt=system_prompt, **model_config
         )
+        return result  # type: ignore[no-any-return]
 
     def select_tier(
         self, task_type: str, complexity: str = "medium", priority: str = "normal"

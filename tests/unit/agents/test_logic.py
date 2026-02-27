@@ -48,7 +48,7 @@ class TestLogicAgent:
             agent = LogicAgent()
 
         chunk = Mock()
-        chunk.__getitem__ = Mock(side_effect=lambda k: "unknown" if k == "language" else "")
+        chunk.get = Mock(return_value="unknown")
 
         assert agent.should_analyze(chunk) is False
 

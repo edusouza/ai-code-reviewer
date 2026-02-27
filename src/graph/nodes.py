@@ -212,9 +212,13 @@ async def parallel_agents_node(state: ReviewState) -> dict[str, Any]:
                 continue
 
             agent_type = agent.__class__.__name__.lower().replace("agent", "")
-            raw_outputs[agent_type] = result
-            if isinstance(result, list):
-                all_suggestions.extend(result)
+            # At this point, result is not an Exception (we continued above)
+            # but mypy doesn't know that, so we cast it
+            from typing import cast
+
+            typed_result = cast(list[Suggestion], result)
+            raw_outputs[agent_type] = typed_result
+            all_suggestions.extend(typed_result)
 
         # Update metadata
         metadata = state["metadata"]
