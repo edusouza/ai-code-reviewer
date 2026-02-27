@@ -1,5 +1,7 @@
 # AI Code Reviewer
 
+[![CI](https://github.com/edusouza/ai-code-reviewer/actions/workflows/ci.yml/badge.svg)](https://github.com/edusouza/ai-code-reviewer/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/edusouza/ai-code-reviewer/branch/main/graph/badge.svg)](https://codecov.io/gh/edusouza/ai-code-reviewer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg)](https://fastapi.tiangolo.com/)
