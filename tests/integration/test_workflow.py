@@ -137,13 +137,11 @@ class TestReviewGraph:
         """Test ingest PR node."""
         from graph.nodes import ingest_pr_node
         
-        with patch("graph.nodes.get_provider_adapter") as mock_get_adapter:
-            mock_adapter = Mock()
-            mock_adapter.fetch_pr = AsyncMock(return_value={
-                "diff": "diff content",
-                "files": []
-            })
-            mock_get_adapter.return_value = mock_adapter
+        with patch("graph.nodes.ProviderFactory.get_provider") as mock_get_provider:
+            mock_provider = Mock()
+            mock_provider.get_pr_diff = AsyncMock(return_value="diff content")
+            mock_provider.get_file_content = AsyncMock(return_value=None)
+            mock_get_provider.return_value = mock_provider
             
             result = await ingest_pr_node(sample_review_state)
         
@@ -167,7 +165,7 @@ diff --git a/file.py b/file.py
         
         assert "chunks" in result
         assert len(result["chunks"]) > 0
-        assert "current_chunk_index" in result
+        assert "metadata" in result
     
     @pytest.mark.asyncio
     async def test_parallel_agents_node(self, sample_review_state):
@@ -185,7 +183,8 @@ diff --git a/file.py b/file.py
         ]
         sample_review_state["current_chunk_index"] = 0
         
-        with patch("graph.nodes.get_agents") as mock_get_agents:
+        with patch("graph.nodes.AgentFactory") as mock_factory_class:
+            mock_factory = Mock()
             mock_agent = Mock()
             mock_agent.analyze = AsyncMock(return_value=[
                 {
@@ -197,7 +196,8 @@ diff --git a/file.py b/file.py
                     "confidence": 0.9
                 }
             ])
-            mock_get_agents.return_value = [mock_agent]
+            mock_factory.create_agent = Mock(return_value=mock_agent)
+            mock_factory_class.return_value = mock_factory
             
             result = await parallel_agents_node(sample_review_state)
         
@@ -247,10 +247,10 @@ diff --git a/file.py b/file.py
             {"file_path": "file.py", "line_number": 10, "message": "Test", "severity": "warning", "category": "style"}
         ]
         
-        with patch("graph.nodes.get_llm_judge") as mock_get_judge:
+        with patch("src.llm.judge.LLMJudge") as mock_judge_class:
             mock_judge = Mock()
             mock_judge.validate_suggestion = AsyncMock(return_value=True)
-            mock_get_judge.return_value = mock_judge
+            mock_judge_class.return_value = mock_judge
             
             result = await llm_judge_node(sample_review_state)
         
@@ -273,10 +273,10 @@ diff --git a/file.py b/file.py
             }
         ]
         
-        with patch("graph.nodes.get_provider_adapter") as mock_get_adapter:
-            mock_adapter = Mock()
-            mock_adapter.post_comment = AsyncMock(return_value=True)
-            mock_get_adapter.return_value = mock_adapter
+        with patch("graph.nodes.ProviderFactory.get_provider") as mock_get_provider:
+            mock_provider = Mock()
+            mock_provider.post_review_comments = AsyncMock(return_value=True)
+            mock_get_provider.return_value = mock_provider
             
             result = await publish_comments_node(sample_review_state)
         
@@ -307,10 +307,10 @@ class TestWorkflowEndToEnd:
         from graph.nodes import ingest_pr_node
         
         # Simulate an error in ingest
-        with patch("graph.nodes.get_provider_adapter") as mock_get_adapter:
-            mock_adapter = Mock()
-            mock_adapter.fetch_pr = AsyncMock(side_effect=Exception("API Error"))
-            mock_get_adapter.return_value = mock_adapter
+        with patch("graph.nodes.ProviderFactory.get_provider") as mock_get_provider:
+            mock_provider = Mock()
+            mock_provider.get_pr_diff = AsyncMock(side_effect=Exception("API Error"))
+            mock_get_provider.return_value = mock_provider
             
             result = await ingest_pr_node(sample_review_state)
         

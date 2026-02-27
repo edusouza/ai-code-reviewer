@@ -78,6 +78,18 @@ class ProviderFactory:
         cls._adapters[name.lower()] = adapter_class
 
     @classmethod
+    def get_provider(cls, provider: str) -> ProviderAdapter:
+        """Get a provider adapter instance (alias for create).
+
+        Args:
+            provider: Provider name (github, gitlab, bitbucket)
+
+        Returns:
+            ProviderAdapter instance
+        """
+        return cls.create(provider)
+
+    @classmethod
     def get_supported_providers(cls) -> list[str]:
         """Get list of supported provider names."""
         return list(cls._adapters.keys())
