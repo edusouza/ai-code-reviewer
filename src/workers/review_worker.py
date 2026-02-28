@@ -30,7 +30,7 @@ class ReviewJob:
     delivery_attempt: int = 1
 
     @classmethod
-    def from_message(cls, message: Message) -> "ReviewJob":
+    def from_message(cls, message: Message) -> ReviewJob:
         """Create ReviewJob from Pub/Sub message."""
         data = json.loads(message.data.decode("utf-8"))
 

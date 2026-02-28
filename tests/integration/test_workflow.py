@@ -19,14 +19,17 @@ from models.events import PRAction, PREvent
 class MockCheckpointer(BaseCheckpointSaver):
     """Mock checkpointer for testing that inherits from BaseCheckpointSaver."""
 
-    def get(self, config):
+    def get_tuple(self, config):
         return None
 
-    def put(self, config, checkpoint):
+    def put(self, config, checkpoint, metadata, new_versions=None):
         return config
 
-    def list(self, config):
-        return []
+    def put_writes(self, config, writes, task_id):
+        pass
+
+    def list(self, config, *, filter=None, before=None, limit=None):
+        return iter([])
 
 
 @pytest.mark.integration

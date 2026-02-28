@@ -1,8 +1,14 @@
+from collections.abc import Iterator
 from datetime import datetime
 from typing import Any, cast
 
 from google.cloud.firestore import Client as FirestoreClient
-from langgraph.checkpoint.base import BaseCheckpointSaver, Checkpoint
+from langgraph.checkpoint.base import (  # type: ignore[attr-defined]
+    BaseCheckpointSaver,
+    Checkpoint,
+    CheckpointMetadata,
+    CheckpointTuple,
+)
 
 from src.config.settings import settings
 
@@ -15,8 +21,8 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
         self.db = FirestoreClient(project=settings.project_id)
         self.collection = self.db.collection("review_checkpoints")
 
-    def get(self, config: dict[str, Any]) -> Checkpoint | None:  # type: ignore[override]
-        """Load checkpoint from Firestore."""
+    def get_tuple(self, config: dict[str, Any]) -> CheckpointTuple | None:  # type: ignore[override]
+        """Load checkpoint tuple from Firestore."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
             return None
@@ -28,20 +34,38 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
             return None
 
         data = doc.to_dict()
-        from typing import cast
-
-        return cast(
+        checkpoint = cast(
             Checkpoint,
             {
                 "v": data["v"],
                 "ts": data["ts"],
+                "id": data.get("id", thread_id),
                 "channel_values": self._deserialize_state(data["channel_values"]),
                 "channel_versions": data["channel_versions"],
                 "versions_seen": data["versions_seen"],
+                "pending_sends": data.get("pending_sends", []),
             },
         )
+        metadata = cast(
+            CheckpointMetadata,
+            data.get("metadata", {}),
+        )
 
-    def put(self, config: dict[str, Any], checkpoint: Checkpoint) -> dict[str, Any]:  # type: ignore[override]
+        return CheckpointTuple(  # type: ignore[call-arg]
+            config=config,  # type: ignore[arg-type]
+            checkpoint=checkpoint,
+            metadata=metadata,
+            parent_config=None,
+            pending_writes=None,
+        )
+
+    def put(  # type: ignore[override]
+        self,
+        config: dict[str, Any],
+        checkpoint: Checkpoint,
+        metadata: CheckpointMetadata,
+        new_versions: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Save checkpoint to Firestore."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
@@ -52,40 +76,83 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
             {
                 "v": checkpoint["v"],
                 "ts": checkpoint["ts"],
+                "id": checkpoint.get("id", thread_id),
                 "channel_values": self._serialize_state(checkpoint["channel_values"]),
                 "channel_versions": checkpoint["channel_versions"],
                 "versions_seen": checkpoint["versions_seen"],
+                "pending_sends": checkpoint.get("pending_sends", []),
+                "metadata": metadata if metadata else {},
                 "updated_at": datetime.utcnow().isoformat(),
             }
         )
 
         return {"configurable": {"thread_id": thread_id}}
 
-    def list(self, config: dict[str, Any]) -> list[Checkpoint]:  # type: ignore[override]
-        """List all checkpoints for a thread."""
+    def put_writes(
+        self,
+        config: dict[str, Any],
+        writes: list[tuple[str, Any]],
+        task_id: str,
+    ) -> None:
+        """Save intermediate writes linked to a checkpoint."""
         thread_id = config.get("configurable", {}).get("thread_id")
         if not thread_id:
-            return []
+            return
+
+        doc_ref = self.collection.document(f"{thread_id}_writes_{task_id}")
+        doc_ref.set(
+            {
+                "thread_id": thread_id,
+                "task_id": task_id,
+                "writes": [{"channel": channel, "value": str(value)} for channel, value in writes],
+                "updated_at": datetime.utcnow().isoformat(),
+            }
+        )
+
+    def list(  # type: ignore[override]
+        self,
+        config: dict[str, Any],
+        *,
+        filter: dict[str, Any] | None = None,
+        before: dict[str, Any] | None = None,
+        limit: int | None = None,
+    ) -> Iterator[CheckpointTuple]:
+        """List checkpoints that match a given configuration."""
+        thread_id = config.get("configurable", {}).get("thread_id")
+        if not thread_id:
+            return
 
         docs = self.collection.where("thread_id", "==", thread_id).order_by("ts").stream()
-        checkpoints = []
 
-        for doc in docs:
+        for count, doc in enumerate(docs):
+            if limit and count >= limit:
+                break
+
             data = doc.to_dict()
-            checkpoints.append(
-                cast(
-                    Checkpoint,
-                    {
-                        "v": data["v"],
-                        "ts": data["ts"],
-                        "channel_values": self._deserialize_state(data["channel_values"]),
-                        "channel_versions": data["channel_versions"],
-                        "versions_seen": data["versions_seen"],
-                    },
-                )
+            checkpoint = cast(
+                Checkpoint,
+                {
+                    "v": data["v"],
+                    "ts": data["ts"],
+                    "id": data.get("id", ""),
+                    "channel_values": self._deserialize_state(data["channel_values"]),
+                    "channel_versions": data["channel_versions"],
+                    "versions_seen": data["versions_seen"],
+                    "pending_sends": data.get("pending_sends", []),
+                },
+            )
+            metadata = cast(
+                CheckpointMetadata,
+                data.get("metadata", {}),
             )
 
-        return checkpoints
+            yield CheckpointTuple(  # type: ignore[call-arg]
+                config=config,  # type: ignore[arg-type]
+                checkpoint=checkpoint,
+                metadata=metadata,
+                parent_config=None,
+                pending_writes=None,
+            )
 
     def _serialize_state(self, state: dict[str, Any]) -> dict[str, Any]:
         """Serialize state for Firestore storage."""

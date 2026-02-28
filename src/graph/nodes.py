@@ -109,7 +109,7 @@ async def chunk_analyzer_node(state: ReviewState) -> dict[str, Any]:
                 try:
                     line_info = line.split("@@")[1].strip()
                     current_start = int(line_info.split("+")[1].split(",")[0])
-                except (IndexError, ValueError):
+                except (IndexError, ValueError):  # fmt: skip
                     pass
                 current_content.append(line)
 
