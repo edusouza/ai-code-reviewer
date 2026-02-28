@@ -1,5 +1,6 @@
 """Tests for cost.optimizer module."""
 
+import cost.optimizer as opt_mod
 from cost.optimizer import (
     FileInfo,
     FilePriority,
@@ -836,8 +837,6 @@ class TestModuleFunctions:
     """Tests for init_optimizer and get_optimizer."""
 
     def test_init_optimizer_defaults(self):
-        import cost.optimizer as opt_mod
-
         old = opt_mod._optimizer
         try:
             result = init_optimizer()
@@ -849,8 +848,6 @@ class TestModuleFunctions:
             opt_mod._optimizer = old
 
     def test_init_optimizer_custom(self):
-        import cost.optimizer as opt_mod
-
         old = opt_mod._optimizer
         try:
             result = init_optimizer(max_tokens_per_review=50000, max_files_to_review=25)
@@ -861,8 +858,6 @@ class TestModuleFunctions:
             opt_mod._optimizer = old
 
     def test_get_optimizer_before_init(self):
-        import cost.optimizer as opt_mod
-
         old = opt_mod._optimizer
         try:
             opt_mod._optimizer = None

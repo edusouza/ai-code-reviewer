@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+import cost.budget as budget_mod
 from cost.budget import (
     BudgetConfig,
     BudgetEnforcer,
@@ -718,8 +719,6 @@ class TestModuleFunctions:
     """Tests for init_budget_enforcer and get_budget_enforcer."""
 
     def test_init_budget_enforcer_default(self):
-        import cost.budget as budget_mod
-
         old = budget_mod._budget_enforcer
         try:
             result = init_budget_enforcer()
@@ -729,8 +728,6 @@ class TestModuleFunctions:
             budget_mod._budget_enforcer = old
 
     def test_init_budget_enforcer_custom(self):
-        import cost.budget as budget_mod
-
         old = budget_mod._budget_enforcer
         try:
             cfg = BudgetConfig(daily_budget_usd=99.0)
@@ -743,8 +740,6 @@ class TestModuleFunctions:
             budget_mod._budget_enforcer = old
 
     def test_get_budget_enforcer_before_init(self):
-        import cost.budget as budget_mod
-
         old = budget_mod._budget_enforcer
         try:
             budget_mod._budget_enforcer = None
