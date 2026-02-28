@@ -132,7 +132,7 @@ Format your response as a JSON array of findings."""
             llm_suggestions = await self._llm_analysis(chunk, context)
             suggestions.extend(llm_suggestions)
         except Exception:
-            pass
+            pass  # LLM analysis is best-effort; continue with pattern-based results
 
         return suggestions
 
