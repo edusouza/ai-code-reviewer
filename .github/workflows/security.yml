@@ -34,6 +34,9 @@ jobs:
 
   bandit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: read
     steps:
       - uses: actions/checkout@v4
       
@@ -57,9 +60,12 @@ jobs:
 
   trivy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -67,7 +73,7 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          
+
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always()

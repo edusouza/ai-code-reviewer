@@ -1,6 +1,6 @@
 """Default agent configuration when AGENTS.md is not present."""
-from typing import Dict, List, Any
 
+from typing import Any
 
 DEFAULT_STYLE_RULES = {
     "python": {
@@ -11,14 +11,14 @@ DEFAULT_STYLE_RULES = {
             "functions": "snake_case",
             "classes": "PascalCase",
             "constants": "UPPER_SNAKE_CASE",
-            "variables": "snake_case"
+            "variables": "snake_case",
         },
         "preferred_patterns": [
             "Use list comprehensions over map/filter",
             "Use pathlib.Path instead of os.path",
             "Use f-strings for string formatting",
-            "Use type hints for function signatures"
-        ]
+            "Use type hints for function signatures",
+        ],
     },
     "javascript": {
         "max_line_length": 100,
@@ -29,8 +29,8 @@ DEFAULT_STYLE_RULES = {
             "functions": "camelCase",
             "classes": "PascalCase",
             "constants": "UPPER_SNAKE_CASE",
-            "variables": "camelCase"
-        }
+            "variables": "camelCase",
+        },
     },
     "typescript": {
         "max_line_length": 100,
@@ -43,9 +43,9 @@ DEFAULT_STYLE_RULES = {
             "interfaces": "PascalCase",
             "types": "PascalCase",
             "constants": "UPPER_SNAKE_CASE",
-            "variables": "camelCase"
-        }
-    }
+            "variables": "camelCase",
+        },
+    },
 }
 
 
@@ -57,20 +57,20 @@ DEFAULT_SECURITY_PRIORITIES = {
         "Hardcoded secrets or credentials",
         "Insecure deserialization",
         "XXE (XML External Entity) vulnerabilities",
-        "Authentication bypass vulnerabilities"
+        "Authentication bypass vulnerabilities",
     ],
     "medium": [
         "Cross-site scripting (XSS) vulnerabilities",
         "CSRF vulnerabilities",
         "Insecure file uploads",
         "Weak cryptographic implementations",
-        "Missing input validation"
+        "Missing input validation",
     ],
     "low": [
         "Information disclosure in comments",
         "Verbose error messages",
-        "Missing security headers"
-    ]
+        "Missing security headers",
+    ],
 }
 
 
@@ -81,7 +81,6 @@ DEFAULT_IGNORE_PATTERNS = [
     "*.map",
     "bundle.js",
     "vendor/**",
-    
     # Dependencies
     "node_modules/**",
     "vendor/**",
@@ -89,18 +88,15 @@ DEFAULT_IGNORE_PATTERNS = [
     "venv/**",
     "__pycache__/**",
     ".git/**",
-    
     # Lock files
     "package-lock.json",
     "yarn.lock",
     "poetry.lock",
     "Pipfile.lock",
-    
     # Config files that shouldn't be reviewed
     ".editorconfig",
     ".gitignore",
     ".dockerignore",
-    
     # Test data and fixtures
     "**/fixtures/**",
     "**/testdata/**",
@@ -108,13 +104,11 @@ DEFAULT_IGNORE_PATTERNS = [
     "**/*.spec.{js,ts,jsx,tsx}",
     "**/mocks/**",
     "**/__mocks__/**",
-    
     # Documentation
     "*.md",
     "*.rst",
     "docs/**",
     "**/*.md",
-    
     # Binary and image files
     "*.png",
     "*.jpg",
@@ -126,7 +120,7 @@ DEFAULT_IGNORE_PATTERNS = [
     "*.zip",
     "*.tar",
     "*.gz",
-    "*.bin"
+    "*.bin",
 ]
 
 
@@ -137,38 +131,38 @@ DEFAULT_CODE_PATTERNS = {
             "Prefer composition over inheritance",
             "Use dataclasses for simple data structures",
             "Use enum for fixed sets of values",
-            "Prefer async/await for I/O operations"
+            "Prefer async/await for I/O operations",
         ],
         "anti_patterns": [
             "Using mutable default arguments",
             "Catching bare 'except:' clauses",
             "Using 'is' for string/number comparison",
             "Reassigning built-in names (list, dict, etc.)",
-            "Using global variables"
-        ]
+            "Using global variables",
+        ],
     },
     "javascript": {
         "good_patterns": [
             "Use async/await instead of callbacks",
             "Use destructuring for cleaner code",
             "Use optional chaining (?.) and nullish coalescing (??)",
-            "Prefer template literals over string concatenation"
+            "Prefer template literals over string concatenation",
         ],
         "anti_patterns": [
             "Using var instead of let/const",
             "Implicit type coercion (== instead of ===)",
             "Modifying built-in prototypes",
             "Callback hell (deep nesting)",
-            "Memory leaks from event listeners"
-        ]
-    }
+            "Memory leaks from event listeners",
+        ],
+    },
 }
 
 
-def get_default_config() -> Dict[str, Any]:
+def get_default_config() -> dict[str, Any]:
     """
     Get the complete default configuration.
-    
+
     Returns:
         Dictionary containing all default configuration settings
     """
@@ -183,27 +177,27 @@ def get_default_config() -> Dict[str, Any]:
             "severity_threshold": "suggestion",
             "enable_all_agents": True,
             "require_tests_for_new_features": True,
-            "check_documentation_for_public_apis": True
-        }
+            "check_documentation_for_public_apis": True,
+        },
     }
 
 
-def get_language_config(language: str) -> Dict[str, Any]:
+def get_language_config(language: str) -> dict[str, Any]:
     """
     Get configuration for a specific language.
-    
+
     Args:
         language: Programming language name
-        
+
     Returns:
         Configuration dictionary for the language, or empty dict if not found
     """
     config = get_default_config()
-    
+
     return {
         "style_rules": config["style_rules"].get(language, {}),
         "code_patterns": config["code_patterns"].get(language, {}),
         "security_priorities": config["security_priorities"],
         "ignore_patterns": config["ignore_patterns"],
-        "review_settings": config["review_settings"]
+        "review_settings": config["review_settings"],
     }

@@ -322,7 +322,7 @@ resource "google_monitoring_notification_channel" "email" {
 
 # Custom dashboard
 resource "google_monitoring_dashboard" "main" {
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${var.environment} AI Reviewer Dashboard"
     gridLayout = {
@@ -414,16 +414,16 @@ resource "google_monitoring_dashboard" "main" {
 
 # Log-based metrics
 resource "google_logging_metric" "review_completed" {
-  name   = "${var.environment}/review_completed"
+  name    = "${var.environment}/review_completed"
   project = var.project_id
-  filter = <<-EOT
+  filter  = <<-EOT
     resource.type="cloud_run_revision"
     jsonPayload.message="Review completed"
   EOT
   metric_descriptor {
-    metric_kind  = "DELTA"
-    value_type   = "INT64"
-    unit         = "1"
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+    unit        = "1"
     labels {
       key         = "repository"
       value_type  = "STRING"

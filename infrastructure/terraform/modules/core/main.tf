@@ -21,9 +21,9 @@ resource "google_firestore_database" "database" {
   location_id = var.firestore_location
   type        = "FIRESTORE_NATIVE"
 
-  app_engine_integration_mode = "DISABLED"
+  app_engine_integration_mode       = "DISABLED"
   point_in_time_recovery_enablement = var.environment == "prod" ? "POINT_IN_TIME_RECOVERY_ENABLED" : "POINT_IN_TIME_RECOVERY_DISABLED"
-  delete_protection_state = var.environment == "prod" ? "DELETE_PROTECTION_ENABLED" : "DELETE_PROTECTION_DISABLED"
+  delete_protection_state           = var.environment == "prod" ? "DELETE_PROTECTION_ENABLED" : "DELETE_PROTECTION_DISABLED"
 }
 
 # Firestore indexes for common queries
@@ -184,7 +184,7 @@ resource "google_cloud_run_service" "api_blue" {
   template {
     spec {
       service_account_name = var.core_service_account_email
-      
+
       containers {
         image = var.api_image
 
@@ -245,10 +245,10 @@ resource "google_cloud_run_service" "api_blue" {
     metadata {
       annotations = {
         "run.googleapis.com/max-instance-request-concurrency" = "100"
-        "autoscaling.knative.dev/minScale" = var.min_instances
-        "autoscaling.knative.dev/maxScale" = var.max_instances
-        "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
-        "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
+        "autoscaling.knative.dev/minScale"                    = var.min_instances
+        "autoscaling.knative.dev/maxScale"                    = var.max_instances
+        "run.googleapis.com/vpc-access-connector"             = var.vpc_connector_name
+        "run.googleapis.com/vpc-access-egress"                = "private-ranges-only"
       }
     }
   }
@@ -270,7 +270,7 @@ resource "google_cloud_run_service" "api_green" {
   template {
     spec {
       service_account_name = var.core_service_account_email
-      
+
       containers {
         image = var.api_image
 
@@ -331,10 +331,10 @@ resource "google_cloud_run_service" "api_green" {
     metadata {
       annotations = {
         "run.googleapis.com/max-instance-request-concurrency" = "100"
-        "autoscaling.knative.dev/minScale" = var.min_instances
-        "autoscaling.knative.dev/maxScale" = var.max_instances
-        "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
-        "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
+        "autoscaling.knative.dev/minScale"                    = var.min_instances
+        "autoscaling.knative.dev/maxScale"                    = var.max_instances
+        "run.googleapis.com/vpc-access-connector"             = var.vpc_connector_name
+        "run.googleapis.com/vpc-access-egress"                = "private-ranges-only"
       }
     }
   }
@@ -356,7 +356,7 @@ resource "google_cloud_run_service" "worker" {
   template {
     spec {
       service_account_name = var.core_service_account_email
-      
+
       containers {
         image = var.worker_image
 
@@ -392,7 +392,7 @@ resource "google_cloud_run_service" "worker" {
         }
 
         env {
-          name = "LANGFUSE_HOST"
+          name  = "LANGFUSE_HOST"
           value = var.langfuse_host
         }
 
@@ -422,8 +422,8 @@ resource "google_cloud_run_service" "worker" {
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/minScale" = var.worker_min_instances
-        "autoscaling.knative.dev/maxScale" = var.worker_max_instances
+        "autoscaling.knative.dev/minScale"        = var.worker_min_instances
+        "autoscaling.knative.dev/maxScale"        = var.worker_max_instances
         "run.googleapis.com/vpc-access-connector" = var.vpc_connector_name
         "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
       }
@@ -442,7 +442,7 @@ resource "google_cloud_run_service" "webhook" {
   template {
     spec {
       service_account_name = var.core_service_account_email
-      
+
       containers {
         image = var.webhook_image
 

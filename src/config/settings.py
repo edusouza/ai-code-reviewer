@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -7,30 +6,30 @@ class Settings(BaseSettings):
     app_name: str = "AI Code Reviewer"
     debug: bool = False
     version: str = "1.0.0"
-    
+
     # Server
     host: str = "0.0.0.0"
     port: int = 8080
-    
+
     # Google Cloud
     project_id: str = ""
     firestore_database: str = "(default)"
     pubsub_topic: str = "code-reviews"
-    
+
     # GitHub
     github_webhook_secret: str = ""
-    github_app_id: Optional[str] = None
-    github_private_key: Optional[str] = None
-    
+    github_app_id: str | None = None
+    github_private_key: str | None = None
+
     # GitLab
     gitlab_webhook_secret: str = ""
-    gitlab_token: Optional[str] = None
-    
+    gitlab_token: str | None = None
+
     # Bitbucket
     bitbucket_webhook_secret: str = ""
-    bitbucket_username: Optional[str] = None
-    bitbucket_app_password: Optional[str] = None
-    
+    bitbucket_username: str | None = None
+    bitbucket_app_password: str | None = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

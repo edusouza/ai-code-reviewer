@@ -1,11 +1,18 @@
 """Vertex AI Vector Search client for storing and retrieving code patterns."""
-import logging
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass
-import asyncio
+
 import hashlib
+import logging
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
 from config.settings import settings
+
+if TYPE_CHECKING:
+    from google.cloud.aiplatform.matching_engine import (
+        MatchingEngineIndex,
+        MatchingEngineIndexEndpoint,
+    )
+    from vertexai.language_models import TextEmbeddingModel
 
 logger = logging.getLogger(__name__)
 
@@ -13,27 +20,28 @@ logger = logging.getLogger(__name__)
 @dataclass
 class VectorDocument:
     """A document stored in the vector database."""
+
     id: str
     content: str
-    embedding: Optional[List[float]]
-    metadata: Dict[str, Any]
-    score: Optional[float] = None
+    embedding: list[float] | None
+    metadata: dict[str, Any]
+    score: float | None = None
 
 
 class VertexVectorStore:
     """Client for Vertex AI Vector Search."""
-    
+
     def __init__(
         self,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         location: str = "us-central1",
-        index_id: Optional[str] = None,
-        endpoint_id: Optional[str] = None,
-        embedding_model: str = "textembedding-gecko@003"
+        index_id: str | None = None,
+        endpoint_id: str | None = None,
+        embedding_model: str = "textembedding-gecko@003",
     ):
         """
         Initialize Vertex AI Vector Search client.
-        
+
         Args:
             project_id: GCP project ID
             location: GCP location
@@ -46,259 +54,243 @@ class VertexVectorStore:
         self.index_id = index_id
         self.endpoint_id = endpoint_id
         self.embedding_model = embedding_model
-        
-        self._index_client = None
-        self._endpoint_client = None
-        self._embedding_client = None
+
+        self._index_client: MatchingEngineIndex | None = None
+        self._endpoint_client: MatchingEngineIndexEndpoint | None = None
+        self._embedding_client: TextEmbeddingModel | None = None
         self._initialized = False
-    
-    async def initialize(self):
+
+    async def initialize(self) -> None:
         """Initialize clients lazily."""
         if self._initialized:
             return
-        
+
         try:
-            from google.cloud import aiplatform
+            from google.cloud.aiplatform import init as aiplatform_init
             from vertexai.language_models import TextEmbeddingModel
-            
-            aiplatform.init(project=self.project_id, location=self.location)
-            
+
+            aiplatform_init(project=self.project_id, location=self.location)
+
             # Initialize embedding model
             self._embedding_client = TextEmbeddingModel.from_pretrained(self.embedding_model)
-            
+
             # Initialize vector search clients if IDs are provided
             if self.index_id:
-                from google.cloud.aiplatform.gapic.schema import predict
                 from google.cloud.aiplatform.matching_engine import (
                     MatchingEngineIndex,
-                    MatchingEngineIndexEndpoint
+                    MatchingEngineIndexEndpoint,
                 )
-                
+
                 self._index_client = MatchingEngineIndex(index_name=self.index_id)
-                
+
                 if self.endpoint_id:
                     self._endpoint_client = MatchingEngineIndexEndpoint(
                         index_endpoint_name=self.endpoint_id
                     )
-            
+
             self._initialized = True
             logger.info("Vertex AI Vector Search client initialized")
-            
+
         except ImportError as e:
             logger.warning(f"Required packages not installed: {e}")
         except Exception as e:
             logger.error(f"Failed to initialize Vector Search: {e}")
-    
-    async def generate_embedding(self, text: str) -> List[float]:
+
+    async def generate_embedding(self, text: str) -> list[float]:
         """
         Generate embedding for text.
-        
+
         Args:
             text: Text to embed
-            
+
         Returns:
             Embedding vector
         """
         await self.initialize()
-        
+
         if not self._embedding_client:
             logger.error("Embedding client not available")
             # Return dummy embedding for development
             return [0.0] * 768
-        
+
         try:
             # Truncate if too long
             if len(text) > 10000:
                 text = text[:10000]
-            
+
             embeddings = self._embedding_client.get_embeddings([text])
-            
+
             if embeddings and len(embeddings) > 0:
                 return embeddings[0].values
             else:
                 logger.error("No embeddings returned")
                 return [0.0] * 768
-                
+
         except Exception as e:
             logger.error(f"Failed to generate embedding: {e}")
             return [0.0] * 768
-    
+
     async def add_documents(
-        self,
-        documents: List[VectorDocument],
-        namespace: str = "default"
+        self, documents: list[VectorDocument], namespace: str = "default"
     ) -> bool:
         """
         Add documents to the vector store.
-        
+
         Args:
             documents: Documents to add
             namespace: Namespace for the documents
-            
+
         Returns:
             True if successful
         """
         await self.initialize()
-        
+
         if not self._index_client:
             logger.warning("Vector search index not configured, skipping add")
             return False
-        
+
         try:
             # Generate embeddings for documents that don't have them
             for doc in documents:
                 if doc.embedding is None:
                     doc.embedding = await self.generate_embedding(doc.content)
-            
+
             # Prepare data for upsert
             ids = [doc.id for doc in documents]
             embeddings = [doc.embedding for doc in documents]
             metadatas = [doc.metadata for doc in documents]
-            
+
             # Create JSONL format for Vertex AI
             datapoints = []
-            for i, (doc_id, embedding, metadata) in enumerate(zip(ids, embeddings, metadatas)):
+            for _i, (doc_id, embedding, metadata) in enumerate(
+                zip(ids, embeddings, metadatas, strict=False)
+            ):
                 datapoint = {
                     "id": doc_id,
                     "embedding": embedding,
                     "restricts": [
-                        {
-                            "namespace": "type",
-                            "allow_list": [metadata.get("type", "general")]
-                        },
+                        {"namespace": "type", "allow_list": [metadata.get("type", "general")]},
                         {
                             "namespace": "language",
-                            "allow_list": [metadata.get("language", "unknown")]
-                        }
+                            "allow_list": [metadata.get("language", "unknown")],
+                        },
                     ],
-                    "metadata": metadata
+                    "metadata": metadata,
                 }
                 datapoints.append(datapoint)
-            
+
             # Upload to index
             # Note: In production, this would use batch upload
             logger.info(f"Adding {len(datapoints)} documents to vector store")
-            
+
             # For now, we just log since actual implementation depends on setup
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to add documents: {e}")
             return False
-    
+
     async def search(
         self,
         query: str,
         top_k: int = 5,
-        filter_type: Optional[str] = None,
-        filter_language: Optional[str] = None,
-        namespace: str = "default"
-    ) -> List[VectorDocument]:
+        filter_type: str | None = None,
+        filter_language: str | None = None,
+        namespace: str = "default",
+    ) -> list[VectorDocument]:
         """
         Search for similar documents.
-        
+
         Args:
             query: Search query
             top_k: Number of results to return
             filter_type: Filter by document type
             filter_language: Filter by programming language
             namespace: Namespace to search
-            
+
         Returns:
             List of matching documents
         """
         await self.initialize()
-        
+
         if not self._endpoint_client:
             logger.warning("Vector search endpoint not configured, returning empty results")
             return []
-        
+
         try:
             # Generate query embedding
             query_embedding = await self.generate_embedding(query)
-            
+
             # Build filters
             filters = []
             if filter_type:
-                filters.append({
-                    "namespace": "type",
-                    "allow_list": [filter_type]
-                })
+                filters.append({"namespace": "type", "allow_list": [filter_type]})
             if filter_language:
-                filters.append({
-                    "namespace": "language",
-                    "allow_list": [filter_language]
-                })
-            
+                filters.append({"namespace": "language", "allow_list": [filter_language]})
+
             # Query the endpoint
             results = self._endpoint_client.find_neighbors(
-                deployed_index_id=self.index_id,
+                deployed_index_id=self.index_id,  # type: ignore[arg-type]
                 queries=[query_embedding],
                 num_neighbors=top_k,
-                filter=filters if filters else None
+                filter=filters if filters else None,  # type: ignore[arg-type]
             )
-            
+
             # Parse results
             documents = []
             for neighbor in results[0] if results else []:
                 doc = VectorDocument(
                     id=neighbor.id,
-                    content=neighbor.metadata.get("content", ""),
+                    content=neighbor.metadata.get("content", ""),  # type: ignore[attr-defined]
                     embedding=None,
-                    metadata=neighbor.metadata,
-                    score=neighbor.distance
+                    metadata=neighbor.metadata,  # type: ignore[attr-defined]
+                    score=neighbor.distance,
                 )
                 documents.append(doc)
-            
+
             return documents
-            
+
         except Exception as e:
             logger.error(f"Search failed: {e}")
             return []
-    
-    async def delete_documents(
-        self,
-        document_ids: List[str],
-        namespace: str = "default"
-    ) -> bool:
+
+    async def delete_documents(self, document_ids: list[str], namespace: str = "default") -> bool:
         """
         Delete documents from the vector store.
-        
+
         Args:
             document_ids: IDs of documents to delete
             namespace: Namespace
-            
+
         Returns:
             True if successful
         """
         await self.initialize()
-        
+
         if not self._index_client:
             logger.warning("Vector search index not configured, skipping delete")
             return False
-        
+
         try:
             # Remove from index
             self._index_client.remove_datapoints(datapoint_ids=document_ids)
             logger.info(f"Deleted {len(document_ids)} documents")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to delete documents: {e}")
             return False
-    
+
     async def get_document(
-        self,
-        document_id: str,
-        namespace: str = "default"
-    ) -> Optional[VectorDocument]:
+        self, document_id: str, namespace: str = "default"
+    ) -> VectorDocument | None:
         """
         Get a specific document by ID.
-        
+
         Args:
             document_id: Document ID
             namespace: Namespace
-            
+
         Returns:
             Document if found, None otherwise
         """
@@ -306,19 +298,15 @@ class VertexVectorStore:
         # This would need to be implemented via metadata storage (Firestore, etc.)
         logger.warning("Direct document retrieval not implemented for Vertex AI Vector Search")
         return None
-    
-    def generate_document_id(
-        self,
-        content: str,
-        metadata: Dict[str, Any]
-    ) -> str:
+
+    def generate_document_id(self, content: str, metadata: dict[str, Any]) -> str:
         """
         Generate a deterministic document ID.
-        
+
         Args:
             content: Document content
             metadata: Document metadata
-            
+
         Returns:
             Document ID
         """
@@ -328,34 +316,32 @@ class VertexVectorStore:
 
 
 # Global client instance
-_vector_store: Optional[VertexVectorStore] = None
+_vector_store: VertexVectorStore | None = None
 
 
 def init_vector_store(
-    project_id: Optional[str] = None,
-    index_id: Optional[str] = None,
-    endpoint_id: Optional[str] = None
+    project_id: str | None = None,
+    index_id: str | None = None,
+    endpoint_id: str | None = None,
 ) -> VertexVectorStore:
     """
     Initialize the global vector store.
-    
+
     Args:
         project_id: GCP project ID
         index_id: Vector search index ID
         endpoint_id: Vector search endpoint ID
-        
+
     Returns:
         VertexVectorStore instance
     """
     global _vector_store
     _vector_store = VertexVectorStore(
-        project_id=project_id,
-        index_id=index_id,
-        endpoint_id=endpoint_id
+        project_id=project_id, index_id=index_id, endpoint_id=endpoint_id
     )
     return _vector_store
 
 
-def get_vector_store() -> Optional[VertexVectorStore]:
+def get_vector_store() -> VertexVectorStore | None:
     """Get the global vector store instance."""
     return _vector_store

@@ -1,9 +1,15 @@
 # Multi-stage build for production
 FROM python:3.14-slim AS builder
 
-# Install build dependencies
+# Install build dependencies for compiling Python packages with C extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-dev \
     gcc \
+    g++ \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
