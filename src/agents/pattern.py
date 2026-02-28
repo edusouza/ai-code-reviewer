@@ -6,7 +6,7 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class PatternAgent(BaseAgent):  # type: ignore[misc]
+class PatternAgent(BaseAgent):
     """Agent that compares code against learned patterns and best practices."""
 
     def __init__(self) -> None:

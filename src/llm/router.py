@@ -62,7 +62,7 @@ class ModelRouter:
         result = await self.client.generate(
             prompt=prompt, system_prompt=system_prompt, **model_config
         )
-        return result  # type: ignore[no-any-return]
+        return result
 
     async def route_json(
         self,
@@ -89,7 +89,7 @@ class ModelRouter:
         result = await self.client.generate_json(
             prompt=prompt, system_prompt=system_prompt, **model_config
         )
-        return result  # type: ignore[no-any-return]
+        return result
 
     def select_tier(
         self, task_type: str, complexity: str = "medium", priority: str = "normal"

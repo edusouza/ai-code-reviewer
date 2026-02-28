@@ -6,7 +6,7 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class LogicAgent(BaseAgent):  # type: ignore[misc]
+class LogicAgent(BaseAgent):
     """Agent that finds bugs and logic errors in code."""
 
     def __init__(self) -> None:

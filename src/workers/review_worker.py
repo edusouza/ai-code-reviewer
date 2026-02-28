@@ -1,5 +1,7 @@
 """Pub/Sub worker for processing review jobs asynchronously."""
 
+from __future__ import annotations
+
 import asyncio
 import json
 import logging

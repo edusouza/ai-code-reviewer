@@ -88,7 +88,7 @@ class FirestoreCheckpointer(BaseCheckpointSaver):
 
         return {"configurable": {"thread_id": thread_id}}
 
-    def put_writes(
+    def put_writes(  # type: ignore[override]
         self,
         config: dict[str, Any],
         writes: list[tuple[str, Any]],

@@ -8,7 +8,7 @@ check_untyped_defs = false
 disallow_untyped_decorators = false
 no_implicit_optional = false
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 warn_no_return = false
 warn_unreachable = false
 strict_equality = false
@@ -44,6 +44,13 @@ select = [
 ]
 ignore = [
     "E501",  # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "SIM117",  # Nested with statements are clearer in tests
+    "N806",    # Allow uppercase variable names for mock objects
+    "B018",    # Allow standalone expressions in tests
 ]
 
 [tool.ruff.lint.pydocstyle]

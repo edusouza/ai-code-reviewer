@@ -6,7 +6,7 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class StyleAgent(BaseAgent):  # type: ignore[misc]
+class StyleAgent(BaseAgent):
     """Agent that checks code formatting and style conventions."""
 
     def __init__(self) -> None:

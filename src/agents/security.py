@@ -6,7 +6,7 @@ from src.graph.state import ChunkInfo, Suggestion
 from src.llm.client import VertexAIClient
 
 
-class SecurityAgent(BaseAgent):  # type: ignore[misc]
+class SecurityAgent(BaseAgent):
     """Agent that finds security vulnerabilities in code."""
 
     def __init__(self) -> None:
