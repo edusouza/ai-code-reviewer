@@ -182,8 +182,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/yourusername/ai-code-reviewer/issues)
-- 💬 [Discussions](https://github.com/yourusername/ai-code-reviewer/discussions)
+- 🐛 [Issue Tracker](https://github.com/edusouza/ai-code-reviewer/issues)
+- 💬 [Discussions](https://github.com/edusouza/ai-code-reviewer/discussions)
 
 ## Acknowledgments
 
