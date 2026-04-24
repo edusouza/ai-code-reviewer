@@ -11,5 +11,5 @@ PyJWT>=2.11.0
 cryptography>=46.0.0
 python-multipart>=0.0.22
 python-dotenv>=1.2.0
-langgraph>=1.0.0
+langgraph>=1.1.9
 tiktoken>=0.12.0
