@@ -12,5 +12,5 @@ respx>=0.22.0
 
 # Test utilities
 freezegun>=1.4.0
-factory-boy>=3.3.0
+factory-boy>=3.3.3
 faker>=33.0.0
