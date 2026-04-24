@@ -10,6 +10,6 @@ httpx>=0.28.0
 PyJWT>=2.11.0
 cryptography>=46.0.0
 python-multipart>=0.0.22
-python-dotenv>=1.2.0
+python-dotenv>=1.2.2
 langgraph>=1.0.0
 tiktoken>=0.12.0
